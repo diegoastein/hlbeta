@@ -796,14 +796,16 @@
         window.generateInvoice = (items, total, customer, download = true) => {
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
             doc.setFillColor(245, 158, 11); doc.rect(0, 0, 210, 30, 'F');
-            doc.setTextColor(0, 0, 0); doc.setFontSize(18); doc.text("HERRAMIENTAS LIBRES", 15, 15);
-            doc.setFontSize(12); doc.text("DOCUMENTO NO VÁLIDO COMO FACTURA", 15, 23);
+            doc.setTextColor(0, 0, 0); doc.setFontSize(18); doc.text("HERRAMIENTAS LIBRES", 15, 12);
+            doc.setFontSize(16); doc.text("REMITO", 15, 20);
+            doc.setFontSize(10); doc.text("Documento no válido como factura", 15, 26);
             doc.setTextColor(0, 0, 0); doc.setFontSize(10); doc.text(`Cliente: ${customer}`, 140, 15); doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 140, 22);
             doc.autoTable({ startY: 40, head: [['Producto', 'Marca', 'Cant.', 'Precio', 'Subtotal']], body: items.map(i => [i.name, i.brand || '-', i.qty, fmt(i.price), fmt(i.price * i.qty)]), theme: 'striped', headStyles: { fillColor: [0, 0, 0] } });
             const finalY = doc.lastAutoTable.finalY + 10;
             doc.setFontSize(14); doc.text(`TOTAL REMITADO: ${fmt(total)}`, 140, finalY);
             doc.setFontSize(8); doc.setTextColor(100, 100, 100);
-            doc.text("Este documento es un remito de entrega sin valor fiscal.", 15, finalY + 10);
+            doc.text("Este documento es un REMITO de entrega sin valor fiscal.", 15, finalY + 10);
+            doc.text("Sin valor fiscal. Comprobante de uso interno y control de mercadería.", 15, finalY + 15);
             if (download) doc.save(`Remito_${customer}.pdf`); else return doc.output('blob');
         };
 
@@ -892,9 +894,12 @@
                 return ts >= from && ts <= to && matchesSearch && matchesType; 
             }).sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)); 
             
-            // Limitado a los últimos 10 movimientos si no hay filtros activos o por defecto
-            if(!fFrom?.value && !fTo?.value && !term && !type) f = f.slice(0,10); 
-            else f = f.slice(0, 50); // Límite de seguridad para búsquedas
+            // Limitado estrictamente a los últimos 10 movimientos si no hay filtros activos
+            if(!fFrom?.value && !fTo?.value && !term && !type) {
+                f = f.slice(0, 10);
+            } else {
+                f = f.slice(0, 50); // Límite de seguridad razonable para búsquedas
+            }
             
             hl.innerHTML = f.map(h => `<tr class="border-b border-adaptive text-xs hover:bg-gray-50 dark:hover:bg-black/5 transition-colors"><td class="p-4 opacity-60">${h.date?.toDate ? h.date.toDate().toLocaleDateString() : 'Reciente'}</td><td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-adaptive shadow-sm">${h.saleMode || 'N/A'}</span></td><td class="p-4 font-bold text-adaptive">${h.customerName || 'Mostrador'}</td><td class="p-4 opacity-60 italic">${h.detail}</td><td class="p-4 font-bold accent-color text-sm">${fmt(h.amount)}</td></tr>`).join(''); 
         };
