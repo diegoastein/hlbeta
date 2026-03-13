@@ -301,7 +301,14 @@
             <div class="bg-card rounded-xl border border-adaptive overflow-x-auto shadow-sm">
                 <table class="w-full text-left">
                     <thead class="bg-gray-50 dark:bg-black/20 border-b border-adaptive text-xs uppercase opacity-70">
-                        <tr><th class="p-4">Fecha</th><th class="p-4">Tipo</th><th class="p-4">Cliente</th><th class="p-4">Artículos (Marca/Prov)</th><th class="p-4">Total</th></tr>
+                        <tr>
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4">Tipo</th>
+                            <th class="p-4">Cliente</th>
+                            <th class="p-4">Artículos (Marca/Prov)</th>
+                            <th class="p-4">Total</th>
+                            <th class="p-4 text-center">Anular</th>
+                        </tr>
                     </thead>
                     <tbody id="history-list"></tbody>
                 </table>
@@ -783,6 +790,34 @@
             } catch(e) { window.showToast("Error al procesar"); }
         };
 
+        window.undoSale = async (saleId) => {
+            if (!confirm("¿Estás seguro de que quieres anular esta venta? El stock se devolverá al inventario.")) return;
+            
+            const sale = historyRaw.find(h => h.id === saleId);
+            if (!sale) return window.showToast("Error: Venta no encontrada");
+            
+            try {
+                // 1. Devolver el stock por cada item vendido
+                if (sale.items && sale.items.length > 0) {
+                    for (const item of sale.items) {
+                        // Verificamos si el producto aun existe antes de intentar actualizar stock
+                        const prodRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', item.id);
+                        await updateDoc(prodRef, { 
+                            stock: increment(item.qty) 
+                        });
+                    }
+                }
+                
+                // 2. Borrar el registro de la venta
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', saleId));
+                
+                window.showToast("Venta anulada y stock devuelto.");
+            } catch (err) {
+                console.error(err);
+                window.showToast("Error al anular la venta");
+            }
+        };
+
         window.handleInvoiceDownload = () => { if(currentInvoiceData) window.generateInvoice(currentInvoiceData.items, currentInvoiceData.total, currentInvoiceData.customer, true); };
         window.handleInvoiceShare = async () => {
             if(!currentInvoiceData) return;
@@ -901,7 +936,22 @@
                 f = f.slice(0, 50); // Límite de seguridad razonable para búsquedas
             }
             
-            hl.innerHTML = f.map(h => `<tr class="border-b border-adaptive text-xs hover:bg-gray-50 dark:hover:bg-black/5 transition-colors"><td class="p-4 opacity-60">${h.date?.toDate ? h.date.toDate().toLocaleDateString() : 'Reciente'}</td><td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-adaptive shadow-sm">${h.saleMode || 'N/A'}</span></td><td class="p-4 font-bold text-adaptive">${h.customerName || 'Mostrador'}</td><td class="p-4 opacity-60 italic">${h.detail}</td><td class="p-4 font-bold accent-color text-sm">${fmt(h.amount)}</td></tr>`).join(''); 
+            hl.innerHTML = f.map(h => `
+                <tr class="border-b border-adaptive text-xs hover:bg-gray-50 dark:hover:bg-black/5 transition-colors">
+                    <td class="p-4 opacity-60">${h.date?.toDate ? h.date.toDate().toLocaleDateString() : 'Reciente'}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-adaptive shadow-sm">${h.saleMode || 'N/A'}</span>
+                    </td>
+                    <td class="p-4 font-bold text-adaptive">${h.customerName || 'Mostrador'}</td>
+                    <td class="p-4 opacity-60 italic">${h.detail}</td>
+                    <td class="p-4 font-bold accent-color text-sm">${fmt(h.amount)}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="window.undoSale('${h.id}')" class="text-red-400 hover:text-red-600 hover:scale-110 transition-all" title="Anular venta y restaurar stock">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>`).join(''); 
+            lucide.createIcons();
         };
         window.editExpense = (e) => { document.getElementById('e-id').value = e.id; document.getElementById('e-concept').value = e.concept; document.getElementById('e-category').value = e.category; document.getElementById('e-amount').value = e.amount; window.openModal('modal-expense'); };
         window.viewClientHistory = (id, name) => { const cs = historyRaw.filter(h => h.customerId === id); document.getElementById('client-history-name').innerText = `Compras de ${name}`; document.getElementById('client-history-content').innerHTML = cs.length ? cs.map(h => `<div class="mb-4 p-4 bg-gray-100 dark:bg-black/5 rounded border border-adaptive"><div class="flex justify-between text-xs mb-1"><span class="opacity-60">${h.date?.toDate ? h.date.toDate().toLocaleDateString() : 'Reciente'}</span><span class="font-bold uppercase text-amber-500">${h.saleMode}</span></div><p class="text-sm text-adaptive">${h.detail}</p><p class="text-right font-bold mt-2 text-amber-500">${fmt(h.amount)}</p></div>`).join('') : '<p class="text-center italic opacity-40 text-adaptive">Sin compras registradas</p>'; window.openModal('modal-client-history'); };
