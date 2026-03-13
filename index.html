@@ -25,13 +25,13 @@
 
         /* MODO OSCURO OPCIONAL */
         body.dark-mode {
-            --bg-body: #121212;
-            --bg-card: #1e1e1e;
-            --text-main: #e0e0e0;
-            --text-muted: #9ca3af;
-            --border-color: #374151;
-            --input-bg: #2d2d2d;
-            --nav-bg: #1e1e1e;
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --nav-bg: #1e293b;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
@@ -46,7 +46,7 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-body); }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-        body.dark-mode ::-webkit-scrollbar-thumb { background: #333; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #334155; }
         ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
 
         .btn-primary { 
@@ -75,6 +75,16 @@
         #login-overlay {
             background-color: var(--bg-body);
             z-index: 9999;
+        }
+
+        /* Mejoras de cabeceras de tabla */
+        .table-header {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #374151; /* gray-700 */
+        }
+        body.dark-mode .table-header {
+            background-color: #0f172a; /* color muy oscuro */
+            color: #f59e0b; /* Acento naranja para contraste máximo */
         }
 
         @media (max-width: 768px) {
@@ -178,7 +188,7 @@
             </div>
             <div class="bg-card rounded-xl border border-adaptive overflow-x-auto shadow-sm">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-black/20 border-b border-adaptive text-xs uppercase opacity-70">
+                    <thead class="table-header border-b border-adaptive text-[10px] uppercase font-bold tracking-wider">
                         <tr>
                             <th class="p-4">Imagen</th>
                             <th class="p-4">Producto</th>
@@ -300,7 +310,7 @@
             </div>
             <div class="bg-card rounded-xl border border-adaptive overflow-x-auto shadow-sm">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-black/20 border-b border-adaptive text-xs uppercase opacity-70">
+                    <thead class="table-header border-b border-adaptive text-[10px] uppercase font-bold tracking-wider">
                         <tr>
                             <th class="p-4">Fecha</th>
                             <th class="p-4">Tipo</th>
@@ -343,8 +353,8 @@
             </div>
             <div class="bg-card rounded-xl border border-adaptive overflow-hidden shadow-sm">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-black/20 border-b border-adaptive text-xs uppercase opacity-70">
-                        <tr><th class="p-4">Fecha</th><th class="p-4">Concepto</th><th class="p-4">Categoría</th><th class="p-4">Monto</th><th class="p-4">Acciones</th></tr>
+                    <thead class="table-header border-b border-adaptive text-[10px] uppercase font-bold tracking-wider">
+                        <tr><th class="p-4">Fecha</th><th class="p-4">Concepto</th><th class="p-4">Categoría</th><th class="p-4">Monto</th><th class="p-4 text-center">Acciones</th></tr>
                     </thead>
                     <tbody id="expense-list"></tbody>
                 </table>
@@ -648,7 +658,7 @@
             const el = document.getElementById('expense-list'); if(!el) return;
             const selectedMonth = document.getElementById('accounting-month').value;
             const filtered = expenses.filter(e => e.date && e.date.toDate().toISOString().slice(0, 7) === selectedMonth);
-            el.innerHTML = filtered.map(e => `<tr class="border-b border-adaptive hover:bg-gray-50 dark:hover:bg-black/5 transition-colors"><td class="p-4 text-xs opacity-60">${e.date?.toDate ? e.date.toDate().toLocaleDateString() : '-'}</td><td class="p-4 font-medium text-adaptive">${e.concept}</td><td class="p-4"><span class="text-[10px] bg-gray-100 dark:bg-gray-700/30 px-2 py-0.5 rounded opacity-70 uppercase text-adaptive">${e.category}</span></td><td class="p-4 font-bold text-red-500">${fmt(e.amount)}</td><td class="p-4 flex gap-2"><button onclick='window.editExpense(${JSON.stringify(e).replace(/'/g, "&apos;")})' class="opacity-40 hover:opacity-100 hover:text-amber-500"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="window.deleteExpense('${e.id}')" class="opacity-40 hover:opacity-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
+            el.innerHTML = filtered.map(e => `<tr class="border-b border-adaptive hover:bg-gray-50 dark:hover:bg-black/5 transition-colors"><td class="p-4 text-xs opacity-60">${e.date?.toDate ? e.date.toDate().toLocaleDateString() : '-'}</td><td class="p-4 font-medium text-adaptive">${e.concept}</td><td class="p-4"><span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded opacity-70 uppercase text-adaptive">${e.category}</span></td><td class="p-4 font-bold text-red-500">${fmt(e.amount)}</td><td class="p-4 flex gap-2"><button onclick='window.editExpense(${JSON.stringify(e).replace(/'/g, "&apos;")})' class="opacity-40 hover:opacity-100 hover:text-amber-500"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="window.deleteExpense('${e.id}')" class="opacity-40 hover:opacity-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
             lucide.createIcons();
         };
 
