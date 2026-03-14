@@ -1,92 +1,104 @@
-Portal de Entrada
-
-Para "integrar" las aplicaciones sin tocar el código de la original, puedes usar este Portal de Acceso. Solo necesitas guardar este archivo como index.html en tu servidor (y renombrar la app de ventas a ventas.html), o simplemente tenerlo como una página de inicio.
-
-Instrucciones:
-
-Sube dashboard.html y ventas.html (tu antigua app index.html) a la misma carpeta de tu hosting.
-
-Guarda el siguiente código como el nuevo index.html.
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HL Sistema - Acceso</title>
+    <title>HL Sistema - Portal de Acceso</title>
     <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
     <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
     <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap)');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f9fafb;
-            color: #111827;
+        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap)');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Fondo Slate Oscuro */
+            background-image: radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent),
+                              radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.03), transparent);
         }
         .accent-color { color: #f59e0b; }
         .bg-accent { background-color: #f59e0b; }
-        .card-premium {
-            background: white;
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        .card-glass {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .card-premium:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            border-color: #f59e0b;
+        .card-glass:hover {
+            transform: translateY(-8px);
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background: rgba(30, 41, 59, 0.7);
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6">
+<body class="min-h-screen flex flex-col items-center justify-center p-6 text-slate-100">
 
-    <!-- Logo Central -->
-    <div class="flex flex-col items-center mb-12">
-        <div class="p-4 bg-accent rounded-2xl mb-4 shadow-lg shadow-amber-500/20">
-            <i data-lucide="wrench" class="text-black w-10 h-10"></i>
+    <!-- Header / Logo -->
+    <div class="flex flex-col items-center mb-16">
+        <div class="p-5 bg-accent rounded-3xl mb-6 shadow-2xl glow transform -rotate-2">
+            <i data-lucide="wrench" class="text-black w-12 h-12"></i>
         </div>
-        <h1 class="text-3xl font-bold uppercase tracking-widest text-center">Herramientas<span class="accent-color">Libres</span></h1>
-        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mt-2 opacity-60">Ecosistema de Gestión</p>
+        <h1 class="text-4xl md:text-5xl font-extrabold uppercase tracking-[0.2em] text-center">
+            Herramientas<span class="accent-color">Libres</span>
+        </h1>
+        <div class="h-1 w-24 bg-accent mt-4 rounded-full"></div>
+        <p class="text-xs text-slate-500 font-bold uppercase tracking-[0.4em] mt-6 opacity-80">Ecosistema de Gestión Operativa</p>
     </div>
 
-    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
-        
+    <!-- Contenedor de Tarjetas -->
+    <div class="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-10">
+
         <!-- Tarjeta de Ventas -->
-        <a href="ventas.html" class="card-premium p-8 rounded-3xl group">
-            <div class="flex flex-col h-full">
-                <div class="p-5 bg-amber-50 text-amber-500 rounded-2xl w-fit mb-6 group-hover:bg-amber-500 group-hover:text-black transition-colors">
-                    <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+        <a href="ventas.html" class="card-glass p-10 rounded-[2.5rem] group relative overflow-hidden">
+            <!-- Icono de fondo decorativo -->
+            <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                <i data-lucide="shopping-cart" class="w-32 h-32 text-accent"></i>
+            </div>
+            
+            <div class="relative z-10 flex flex-col h-full">
+                <div class="p-4 bg-amber-500/10 text-amber-500 rounded-2xl w-fit mb-8 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300">
+                    <i data-lucide="shopping-cart" class="w-10 h-10"></i>
                 </div>
-                <h2 class="text-2xl font-bold mb-3">Ventas & Stock</h2>
-                <p class="text-gray-500 text-sm leading-relaxed mb-8">
-                    Acceso operativo para el mostrador. Realiza ventas, carga productos al inventario y genera remitos de entrega.
+                <h2 class="text-3xl font-bold mb-4 group-hover:text-white transition-colors">Ventas & Stock</h2>
+                <p class="text-slate-400 text-base leading-relaxed mb-10 group-hover:text-slate-300 transition-colors">
+                    Módulo de facturación y control de mostrador. Carga de productos, gestión de remitos y movimientos de inventario en tiempo real.
                 </p>
-                <div class="mt-auto flex items-center gap-2 font-bold text-amber-500 text-sm">
-                    ENTRAR AL MOSTRADOR <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                <div class="mt-auto flex items-center gap-3 font-bold text-amber-500 text-sm tracking-widest">
+                    ACCEDER AL SISTEMA <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-2 transition-transform"></i>
                 </div>
             </div>
         </a>
 
         <!-- Tarjeta de Dashboard -->
-        <a href="dashboard.html" class="card-premium p-8 rounded-3xl group">
-            <div class="flex flex-col h-full">
-                <div class="p-5 bg-slate-100 text-slate-600 rounded-2xl w-fit mb-6 group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                    <i data-lucide="bar-chart-3" class="w-8 h-8"></i>
+        <a href="dashboard.html" class="card-glass p-10 rounded-[2.5rem] group relative overflow-hidden">
+            <!-- Icono de fondo decorativo -->
+            <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                <i data-lucide="bar-chart-3" class="w-32 h-32 text-white"></i>
+            </div>
+
+            <div class="relative z-10 flex flex-col h-full">
+                <div class="p-4 bg-slate-700/50 text-slate-300 rounded-2xl w-fit mb-8 group-hover:bg-white group-hover:text-black transition-all duration-300">
+                    <i data-lucide="bar-chart-3" class="w-10 h-10"></i>
                 </div>
-                <h2 class="text-2xl font-bold mb-3 text-slate-800">Panel Administrativo</h2>
-                <p class="text-gray-500 text-sm leading-relaxed mb-8">
-                    Analítica avanzada e inteligencia de negocios. Rankings de venta, alertas de stock bajo y exportación de datos.
+                <h2 class="text-3xl font-bold mb-4 group-hover:text-white transition-colors">Panel Admin</h2>
+                <p class="text-slate-400 text-base leading-relaxed mb-10 group-hover:text-slate-300 transition-colors">
+                    Inteligencia de negocios y analítica avanzada. Reportes de rentabilidad, exportación de datos y supervisión de métricas clave.
                 </p>
-                <div class="mt-auto flex items-center gap-2 font-bold text-slate-800 text-sm">
-                    VER ESTADÍSTICAS <i data-lucide="chevron-right" class="w-4 h-4 text-amber-500"></i>
+                <div class="mt-auto flex items-center gap-3 font-bold text-white text-sm tracking-widest">
+                    VER ESTADÍSTICAS <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-2 transition-transform text-accent"></i>
                 </div>
             </div>
         </a>
 
     </div>
 
-    <!-- Footer decorativo -->
-    <footer class="mt-16 text-[10px] text-gray-400 uppercase font-bold tracking-[0.2em]">
-        HL Beta © 2024
+    <!-- Footer -->
+    <footer class="mt-20 flex flex-col items-center gap-2">
+        <p class="text-[10px] text-slate-600 uppercase font-black tracking-[0.4em]">HL BETA © 2026</p>
+        <p class="text-[9px] text-slate-700 font-medium">Powering Commerce Excellence</p>
     </footer>
 
     <script>
