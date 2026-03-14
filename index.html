@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -19,7 +18,6 @@
             --text-muted: #4b5563;
             --border-color: #e5e7eb;
             --input-bg: #ffffff;
-            --nav-bg: #ffffff;
         }
 
         body.dark-mode {
@@ -29,7 +27,6 @@
             --text-muted: #94a3b8;
             --border-color: #334155;
             --input-bg: #0f172a;
-            --nav-bg: #1e293b;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
@@ -63,7 +60,6 @@
         body.dark-mode .table-header { background-color: #0f172a; color: #f59e0b; }
 
         #login-overlay { background-color: var(--bg-body); z-index: 9999; }
-        .modal-scroll { max-height: 80vh; overflow-y: auto; }
     </style>
 </head>
 <body class="min-h-screen pb-20 md:pb-0">
@@ -75,8 +71,8 @@
                 <div class="p-3 bg-accent rounded-xl mb-4">
                     <i data-lucide="wrench" class="text-black w-8 h-8"></i>
                 </div>
-                <h1 class="text-2xl font-bold uppercase tracking-widest text-center" id="display-biz-name">Herramientas<span class="accent-color">Libres</span></h1>
-                <p class="text-xs opacity-60 mt-2 text-center">Versión Beta - Gestión Comercial</p>
+                <h1 class="text-2xl font-bold uppercase tracking-widest text-center">Herramientas<span class="accent-color">Libres</span></h1>
+                <p class="text-xs opacity-60 mt-2">Versión Beta - Gestión Comercial</p>
             </div>
             <form id="login-form" class="space-y-4">
                 <div>
@@ -93,20 +89,20 @@
         </div>
     </div>
 
-    <!-- Navegación -->
+    <!-- Navegación Escritorio -->
     <nav class="bg-card border-b border-adaptive sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
             <div class="flex items-center gap-2">
                 <div class="p-2 bg-accent rounded-lg"><i data-lucide="wrench" class="text-black w-6 h-6"></i></div>
-                <span class="text-xl font-bold tracking-tight uppercase" id="nav-biz-name">HL<span class="accent-color">Beta</span></span>
+                <span class="text-xl font-bold tracking-tight uppercase">HL<span class="accent-color">Beta</span></span>
             </div>
             <div class="hidden md:flex space-x-6">
-                <button onclick="switchTab('stock')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-stock">Stock</button>
-                <button onclick="switchTab('proveedores')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-proveedores">Proveedores</button>
-                <button onclick="switchTab('ventas')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-ventas">Ventas</button>
-                <button onclick="switchTab('clientes')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-clientes">Clientes</button>
-                <button onclick="switchTab('historial')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-historial">Historial</button>
-                <button onclick="switchTab('contabilidad')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-contabilidad">Contabilidad</button>
+                <button onclick="switchTab('stock')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-stock">Stock</button>
+                <button onclick="switchTab('proveedores')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-proveedores">Proveedores</button>
+                <button onclick="switchTab('ventas')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-ventas">Ventas</button>
+                <button onclick="switchTab('clientes')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-clientes">Clientes</button>
+                <button onclick="switchTab('historial')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-historial">Historial</button>
+                <button onclick="switchTab('contabilidad')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-contabilidad">Contabilidad</button>
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="window.toggleTheme()" class="p-2 rounded-full hover:bg-gray-200/50 transition-colors">
@@ -130,13 +126,14 @@
     </div>
 
     <main class="max-w-7xl mx-auto p-4 md:p-8">
+        
         <!-- SECCIÓN: STOCK -->
         <section id="sec-stock" class="tab-content hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Inventario</h2>
-                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <input type="text" id="stock-search" placeholder="Buscar producto..." class="w-full md:w-64 p-2 rounded text-sm" oninput="window.renderStock()">
-                    <button onclick="prepareNew('modal-product')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2 shadow-md"><i data-lucide="plus" class="w-4 h-4"></i> Nuevo</button>
+                <div class="flex gap-2">
+                    <input type="text" id="stock-search" placeholder="Buscar..." class="p-2 rounded text-sm w-48" oninput="window.renderStock()">
+                    <button onclick="prepareNew('modal-product')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Nuevo</button>
                 </div>
             </div>
             <div class="bg-card rounded-xl border border-adaptive overflow-x-auto shadow-sm">
@@ -153,27 +150,27 @@
         <section id="sec-proveedores" class="tab-content hidden">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Proveedores</h2>
-                <button onclick="prepareNew('modal-supplier')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2 shadow-md"><i data-lucide="user-plus" class="w-4 h-4"></i> Nuevo Proveedor</button>
+                <button onclick="prepareNew('modal-supplier')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i data-lucide="user-plus" class="w-4 h-4"></i> Nuevo</button>
             </div>
-            <div id="supplier-list" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            <div id="supplier-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
         <!-- SECCIÓN: VENTAS -->
         <section id="sec-ventas" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2">
-                    <div class="bg-card p-6 rounded-xl border border-adaptive mb-6 shadow-sm">
-                        <input type="text" id="search-product" placeholder="Buscar por nombre o marca..." class="w-full p-4 rounded-lg text-lg outline-none">
+                    <div class="bg-card p-6 rounded-xl border border-adaptive shadow-sm">
+                        <input type="text" id="search-product" placeholder="Buscar por nombre o marca..." class="w-full p-4 rounded-lg outline-none text-lg">
                         <div id="search-results" class="mt-4 space-y-2"></div>
                     </div>
                 </div>
-                <div class="bg-card p-6 rounded-xl border border-adaptive h-fit sticky top-24 shadow-lg">
+                <div class="bg-card p-6 rounded-xl border border-adaptive shadow-lg h-fit">
                     <h2 class="text-xl font-bold mb-4">Carrito</h2>
                     <div id="cart-items" class="space-y-3 mb-6"></div>
-                    <div class="border-t border-adaptive pt-4 space-y-4">
+                    <div class="border-t border-adaptive pt-4">
                         <div class="flex justify-between text-2xl font-bold"><span>Total</span><span id="cart-total" class="accent-color">$ 0,00</span></div>
+                        <button onclick="window.processSale()" class="btn-primary w-full mt-6 py-4 rounded-lg">Finalizar Venta</button>
                     </div>
-                    <button onclick="window.processSale()" class="btn-primary w-full mt-6 py-4 rounded-lg flex items-center justify-center gap-2">Finalizar Venta</button>
                 </div>
             </div>
         </section>
@@ -181,7 +178,7 @@
         <!-- SECCIÓN: CLIENTES -->
         <section id="sec-clientes" class="tab-content hidden">
             <h2 class="text-2xl font-bold mb-6">Clientes</h2>
-            <div id="customer-list" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            <div id="customer-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
         <!-- SECCIÓN: HISTORIAL -->
@@ -200,10 +197,10 @@
         <!-- SECCIÓN: CONTABILIDAD -->
         <section id="sec-contabilidad" class="tab-content hidden">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Contabilidad (Egresos)</h2>
-                <button onclick="prepareNew('modal-expense')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2 shadow-md"><i data-lucide="minus-circle" class="w-4 h-4"></i> Registrar Egreso</button>
+                <h2 class="text-2xl font-bold">Registro de Egresos</h2>
+                <button onclick="prepareNew('modal-expense')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i data-lucide="minus-circle" class="w-4 h-4"></i> Nuevo Egreso</button>
             </div>
-            <div id="expense-list" class="bg-card rounded-xl border border-adaptive overflow-hidden">
+            <div class="bg-card rounded-xl border border-adaptive overflow-hidden shadow-sm">
                 <table class="w-full text-left">
                     <thead class="table-header border-b border-adaptive text-[10px] uppercase font-bold tracking-wider">
                         <tr><th class="p-4">Fecha</th><th class="p-4">Concepto</th><th class="p-4">Monto</th><th class="p-4">Acción</th></tr>
@@ -212,61 +209,37 @@
                 </table>
             </div>
         </section>
+
     </main>
 
-    <!-- MODAL PRODUCTO -->
-    <div id="modal-product" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="bg-card w-full max-w-xl rounded-2xl border border-adaptive overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-adaptive flex justify-between items-center bg-gray-50 dark:bg-black/20"><h3 class="font-bold">Detalles del Producto</h3><button onclick="closeModal('modal-product')"><i data-lucide="x"></i></button></div>
-            <form id="form-product" class="p-6 grid grid-cols-2 gap-4">
-                <input type="hidden" id="p-id">
-                <div class="col-span-2"><label class="text-xs opacity-60 font-bold uppercase">Nombre</label><input type="text" id="p-name" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 font-bold uppercase">Marca</label><input type="text" id="p-brand" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 font-bold uppercase">Stock</label><input type="number" id="p-stock" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 font-bold uppercase">Precio Venta</label><input type="number" step="0.01" id="p-price" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 font-bold uppercase">Proveedor</label><select id="p-supplier" class="w-full p-2 rounded"></select></div>
-                <div class="col-span-2 pt-4"><button type="submit" class="btn-primary w-full py-3 rounded-lg">Guardar Cambios</button></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL PROVEEDOR -->
-    <div id="modal-supplier" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="bg-card w-full max-w-lg rounded-2xl border border-adaptive shadow-2xl">
-            <div class="p-6 border-b border-adaptive flex justify-between items-center"><h3>Proveedor</h3><button onclick="closeModal('modal-supplier')"><i data-lucide="x"></i></button></div>
-            <form id="form-supplier" class="p-6 space-y-4">
-                <input type="hidden" id="s-id">
-                <div><label class="text-xs opacity-60 font-bold uppercase">Razón Social</label><input type="text" id="s-name" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 font-bold uppercase">WhatsApp</label><input type="text" id="s-whatsapp" class="w-full p-2 rounded"></div>
-                <button type="submit" class="btn-primary w-full py-3 rounded-lg mt-4">Guardar Proveedor</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL EGRESO -->
-    <div id="modal-expense" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="bg-card w-full max-w-md rounded-2xl border border-adaptive shadow-2xl">
-            <div class="p-6 border-b border-adaptive flex justify-between items-center"><h3>Nuevo Egreso</h3><button onclick="closeModal('modal-expense')"><i data-lucide="x"></i></button></div>
-            <form id="form-expense" class="p-6 space-y-4">
-                <div><label class="text-xs opacity-60 font-bold uppercase">Concepto</label><input type="text" id="e-concept" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 font-bold uppercase">Monto</label><input type="number" step="0.01" id="e-amount" required class="w-full p-2 rounded"></div>
-                <button type="submit" class="btn-primary w-full py-3 rounded-lg mt-4">Registrar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL CONFIRMACIÓN -->
+    <!-- MODALES -->
     <div id="modal-confirm" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4">
         <div class="bg-card w-full max-w-sm rounded-2xl border border-adaptive p-6 shadow-2xl text-center">
             <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="alert-triangle" class="w-8 h-8"></i>
             </div>
-            <h3 class="text-xl font-bold mb-2">¿Confirmar acción?</h3>
+            <h3 class="text-xl font-bold mb-2 text-adaptive">¿Confirmar acción?</h3>
             <p id="confirm-msg" class="text-sm opacity-60 mb-8">Esta acción no se puede deshacer.</p>
             <div class="flex gap-3">
                 <button onclick="closeModal('modal-confirm')" class="flex-1 py-3 rounded-xl border border-adaptive font-medium">Cancelar</button>
-                <button id="btn-confirm-exec" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium">Confirmar</button>
+                <button id="btn-confirm-exec" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors">Confirmar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL PRODUCTO -->
+    <div id="modal-product" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-card w-full max-w-xl rounded-2xl border border-adaptive overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-adaptive flex justify-between items-center bg-gray-50 dark:bg-black/20"><h3 class="font-bold">Producto</h3><button onclick="closeModal('modal-product')"><i data-lucide="x"></i></button></div>
+            <form id="form-product" class="p-6 grid grid-cols-2 gap-4">
+                <input type="hidden" id="p-id">
+                <div class="col-span-2"><label class="text-xs opacity-60 uppercase font-bold">Nombre</label><input type="text" id="p-name" required class="w-full p-2 rounded"></div>
+                <div><label class="text-xs opacity-60 uppercase font-bold">Marca</label><input type="text" id="p-brand" required class="w-full p-2 rounded"></div>
+                <div><label class="text-xs opacity-60 uppercase font-bold">Stock</label><input type="number" id="p-stock" required class="w-full p-2 rounded"></div>
+                <div><label class="text-xs opacity-60 uppercase font-bold">Precio Venta</label><input type="number" step="0.01" id="p-price" required class="w-full p-2 rounded"></div>
+                <div><label class="text-xs opacity-60 uppercase font-bold">Proveedor</label><select id="p-supplier" class="w-full p-2 rounded"></select></div>
+                <div class="col-span-2 pt-4"><button type="submit" class="btn-primary w-full py-3 rounded-lg">Guardar</button></div>
+            </form>
         </div>
     </div>
 
@@ -275,19 +248,17 @@
         <div class="bg-card p-8 rounded-2xl border border-adaptive w-full max-w-md shadow-2xl text-center">
             <div class="p-4 bg-green-500/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6"><i data-lucide="check-circle" class="text-green-500 w-12 h-12"></i></div>
             <h2 class="text-2xl font-bold mb-2">¡Venta Exitosa!</h2>
-            <div class="flex flex-col gap-3 mt-6">
-                <button id="btn-download-remito" class="btn-primary py-4 rounded-xl flex items-center justify-center gap-2"><i data-lucide="download"></i> Descargar Remito</button>
-                <button onclick="closeModal('modal-success-sale')" class="text-gray-500 pt-4 text-sm">Cerrar</button>
-            </div>
+            <button id="btn-download-remito" class="btn-primary w-full py-4 rounded-xl flex items-center justify-center gap-2 mt-4"><i data-lucide="download"></i> Descargar Remito</button>
+            <button onclick="closeModal('modal-success-sale')" class="text-gray-500 pt-4 text-sm font-medium">Volver</button>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-24 md:bottom-8 right-8 bg-accent text-black px-6 py-3 rounded-full shadow-2xl font-bold opacity-0 transition-all z-[200]"></div>
+    <div id="toast" class="fixed bottom-8 right-8 bg-accent text-black px-6 py-3 rounded-full shadow-2xl font-bold opacity-0 transition-all z-[200]"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDsh5-ZzwjO98S1zIXUx6Sw2ICd5SwiHpM",
@@ -302,11 +273,7 @@
         let db, auth;
         let products = [], suppliers = [], historyRaw = [], customers = [], expenses = [], cart = [];
         let confirmCallback = null;
-        
-        let appConfig = {
-            businessName: "HERRAMIENTAS LIBRES",
-            footerMsg: "Este documento es un REMITO de entrega sin valor fiscal."
-        };
+        let currentInvoiceData = null;
 
         const fmt = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n);
 
@@ -329,43 +296,50 @@
                 e.preventDefault();
                 try {
                     await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
-                } catch (err) { document.getElementById('login-error').innerText = "Acceso denegado"; document.getElementById('login-error').classList.remove('hidden'); }
+                } catch (err) { 
+                    document.getElementById('login-error').innerText = "Acceso denegado"; 
+                    document.getElementById('login-error').classList.remove('hidden'); 
+                }
             };
 
+            // Eventos de botones
             document.getElementById('form-product').onsubmit = handleProductSubmit;
-            document.getElementById('form-supplier').onsubmit = handleSupplierSubmit;
-            document.getElementById('form-expense').onsubmit = handleExpenseSubmit;
             document.getElementById('btn-download-remito').onclick = () => window.handleInvoiceDownload();
             document.getElementById('btn-confirm-exec').onclick = async () => { if (confirmCallback) await confirmCallback(); closeModal('modal-confirm'); };
             
+            // Buscador ventas
+            document.getElementById('search-product').oninput = (e) => {
+                const t = e.target.value.toLowerCase();
+                const r = document.getElementById('search-results');
+                if(!t) { r.innerHTML = ''; return; }
+                const f = products.filter(p => p.name.toLowerCase().includes(t) || p.brand.toLowerCase().includes(t));
+                r.innerHTML = f.slice(0,5).map(p => `
+                    <div onclick="window.addToCartById('${p.id}')" class="flex justify-between items-center p-3 bg-card border border-adaptive rounded-lg cursor-pointer hover:bg-accent/10">
+                        <span>${p.name} (${p.brand})</span>
+                        <span class="font-bold">${fmt(p.price)}</span>
+                    </div>`).join('');
+            };
+
             lucide.createIcons();
         };
 
         function initListeners() {
-            // Configuración Global
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'global'), (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    appConfig.businessName = data.businessName || "HERRAMIENTAS LIBRES";
-                    appConfig.footerMsg = data.footerMsg || "Sin valor fiscal.";
-                    document.getElementById('display-biz-name').innerText = appConfig.businessName;
-                    document.getElementById('nav-biz-name').innerText = appConfig.businessName;
-                }
-            });
-
-            const err = (e) => console.error(e);
+            const err = (e) => console.error("Firestore error:", e);
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), sn => { products = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderStock(); updateSupplierSelect(); }, err);
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'suppliers'), sn => { suppliers = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderSuppliers(); updateSupplierSelect(); }, err);
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), sn => { customers = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderCustomers(); }, err);
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), sn => { expenses = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderExpenses(); }, err);
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sn => { historyRaw = sn.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)); window.renderHistory(); }, err);
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sn => { 
+                historyRaw = sn.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)); 
+                window.renderHistory(); 
+            }, err);
         }
 
         window.renderStock = () => {
-            const search = document.getElementById('stock-search').value.toLowerCase();
-            const list = document.getElementById('stock-list');
-            const filtered = products.filter(p => p.name.toLowerCase().includes(search) || p.brand.toLowerCase().includes(search));
-            list.innerHTML = filtered.map(p => `
+            const sl = document.getElementById('stock-list');
+            const term = document.getElementById('stock-search').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term));
+            sl.innerHTML = filtered.map(p => `
                 <tr class="border-b border-adaptive hover:bg-gray-50 dark:hover:bg-black/10">
                     <td class="p-4"><img src="${p.image || ''}" class="w-10 h-10 object-cover rounded bg-gray-100" onerror="this.src='https://via.placeholder.com/40'"></td>
                     <td class="p-4 font-bold text-sm">${p.name}</td>
@@ -381,8 +355,7 @@
         };
 
         window.renderSuppliers = () => {
-            const list = document.getElementById('supplier-list');
-            list.innerHTML = suppliers.map(s => `
+            document.getElementById('supplier-list').innerHTML = suppliers.map(s => `
                 <div class="bg-card p-6 rounded-xl border border-adaptive relative shadow-sm">
                     <button onclick="window.confirmAction('¿Borrar proveedor?', () => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'suppliers', '${s.id}')))" class="absolute top-4 right-4 text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     <h4 class="font-bold">${s.name}</h4>
@@ -392,20 +365,18 @@
         };
 
         window.renderCustomers = () => {
-            const list = document.getElementById('customer-list');
-            list.innerHTML = customers.map(c => `
+            document.getElementById('customer-list').innerHTML = customers.map(c => `
                 <div class="bg-card p-6 rounded-xl border border-adaptive shadow-sm">
                     <h4 class="font-bold">${c.name} ${c.surname || ''}</h4>
-                    <p class="text-xs opacity-60 mt-1">${c.phone || 'S/C'}</p>
+                    <p class="text-xs opacity-60 mt-1">${c.phone || 'Sin Teléfono'}</p>
                 </div>`).join('') || '<p class="opacity-40 italic">No hay clientes.</p>';
         };
 
         window.renderExpenses = () => {
-            const list = document.getElementById('expenses-table-body');
-            list.innerHTML = expenses.map(e => `
+            document.getElementById('expenses-table-body').innerHTML = expenses.map(e => `
                 <tr class="border-b border-adaptive">
                     <td class="p-4 text-xs opacity-60">${e.date?.toDate().toLocaleDateString() || '-'}</td>
-                    <td class="p-4">${e.concept}</td>
+                    <td class="p-4 font-medium">${e.concept}</td>
                     <td class="p-4 font-bold text-red-500">${fmt(e.amount)}</td>
                     <td class="p-4"><button onclick="window.confirmAction('¿Borrar egreso?', () => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', '${e.id}')))" class="text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
                 </tr>`).join('');
@@ -413,8 +384,7 @@
         };
 
         window.renderHistory = () => {
-            const list = document.getElementById('history-list');
-            list.innerHTML = historyRaw.slice(0, 10).map(h => `
+            document.getElementById('history-list').innerHTML = historyRaw.slice(0, 10).map(h => `
                 <tr class="border-b border-adaptive text-xs">
                     <td class="p-4 opacity-60">${h.date?.toDate().toLocaleDateString() || 'Hoy'}</td>
                     <td class="p-4 font-bold">${h.customerName || 'Mostrador'}</td>
@@ -423,20 +393,6 @@
                     <td class="p-4 text-center"><button onclick="window.confirmAction('¿Anular venta?', () => window.undoSale('${h.id}'))" class="text-red-400 hover:scale-110"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
                 </tr>`).join('');
             lucide.createIcons();
-        };
-
-        window.undoSale = async (id) => {
-            const sale = historyRaw.find(h => h.id === id);
-            if (!sale) return;
-            try {
-                if (sale.items) {
-                    for (const item of sale.items) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', item.id), { stock: increment(item.qty) });
-                    }
-                }
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', id));
-                showToast("Venta anulada y stock devuelto.");
-            } catch (err) { showToast("Error al anular"); }
         };
 
         window.editProductById = (id) => {
@@ -465,19 +421,33 @@
             showToast("Guardado con éxito");
         }
 
-        async function handleSupplierSubmit(e) {
-            e.preventDefault();
-            const data = { name: document.getElementById('s-name').value, whatsapp: document.getElementById('s-whatsapp').value, createdAt: serverTimestamp() };
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'suppliers'), data);
-            closeModal('modal-supplier');
-        }
+        window.undoSale = async (id) => {
+            const sale = historyRaw.find(h => h.id === id);
+            if (!sale) return;
+            try {
+                if (sale.items) {
+                    for (const item of sale.items) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', item.id), { stock: increment(item.qty) });
+                    }
+                }
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', id));
+                showToast("Venta anulada y stock devuelto.");
+            } catch (err) { showToast("Error al anular"); }
+        };
 
-        async function handleExpenseSubmit(e) {
-            e.preventDefault();
-            const data = { concept: document.getElementById('e-concept').value, amount: parseFloat(document.getElementById('e-amount').value), date: serverTimestamp() };
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), data);
-            closeModal('modal-expense');
-        }
+        window.addToCartById = (id) => {
+            const p = products.find(x => x.id === id);
+            if(!p || p.stock <= 0) return showToast("Sin stock");
+            const it = cart.find(i => i.id === p.id);
+            if(it) it.qty++; else cart.push({...p, qty: 1});
+            window.renderCart();
+        };
+
+        window.renderCart = () => {
+            const c = document.getElementById('cart-items');
+            c.innerHTML = cart.map(i => `<div class="flex justify-between text-xs p-2 bg-gray-50 dark:bg-black/20 rounded"><span>${i.name} x${i.qty}</span><b>${fmt(i.price * i.qty)}</b></div>`).join('');
+            document.getElementById('cart-total').innerText = fmt(cart.reduce((s,i) => s + (i.price*i.qty), 0));
+        };
 
         window.processSale = async () => {
             if(!cart.length) return showToast("Carrito vacío");
@@ -488,21 +458,20 @@
             };
             for(const it of cart) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', it.id), { stock: increment(-it.qty) }); }
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sData);
-            window.currentInvoiceData = { items: [...cart], total, customer: "Mostrador" };
+            currentInvoiceData = { items: [...cart], total, customer: "Mostrador" };
             cart = []; window.renderCart();
             openModal('modal-success-sale');
         };
 
         window.handleInvoiceDownload = () => {
             const { jsPDF } = window.jspdf; const docPDF = new jsPDF();
-            const data = window.currentInvoiceData;
             docPDF.setFillColor(245, 158, 11); docPDF.rect(0, 0, 210, 30, 'F');
-            docPDF.setTextColor(0); docPDF.setFontSize(18); docPDF.text(appConfig.businessName.toUpperCase(), 15, 15);
+            docPDF.setTextColor(0); docPDF.setFontSize(18); docPDF.text("HERRAMIENTAS LIBRES", 15, 15);
             docPDF.setFontSize(12); docPDF.text("REMITO - DOCUMENTO NO FISCAL", 15, 23);
-            docPDF.autoTable({ startY: 40, head: [['Producto', 'Cant.', 'Precio', 'Subtotal']], body: data.items.map(i => [i.name, i.qty, fmt(i.price), fmt(i.price * i.qty)]) });
-            docPDF.text(`TOTAL: ${fmt(data.total)}`, 140, docPDF.lastAutoTable.finalY + 10);
+            docPDF.autoTable({ startY: 40, head: [['Producto', 'Cant.', 'Precio', 'Subtotal']], body: currentInvoiceData.items.map(i => [i.name, i.qty, fmt(i.price), fmt(i.price * i.qty)]) });
+            docPDF.text(`TOTAL: ${fmt(currentInvoiceData.total)}`, 140, docPDF.lastAutoTable.finalY + 10);
             docPDF.setFontSize(8); docPDF.setTextColor(100);
-            docPDF.text(appConfig.footerMsg, 15, docPDF.lastAutoTable.finalY + 20);
+            docPDF.text("Este documento es un REMITO sin valor fiscal.", 15, docPDF.lastAutoTable.finalY + 20);
             docPDF.save("Remito.pdf");
         };
 
@@ -522,18 +491,6 @@
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 3000); };
         window.signOutUser = () => signOut(auth);
         window.toggleTheme = () => document.body.classList.toggle('dark-mode');
-        window.addToCartById = (id) => {
-            const p = products.find(x => x.id === id);
-            if(!p || p.stock <= 0) return showToast("Sin stock");
-            const it = cart.find(i => i.id === p.id);
-            if(it) it.qty++; else cart.push({...p, qty: 1});
-            window.renderCart();
-        };
-        window.renderCart = () => {
-            const c = document.getElementById('cart-items');
-            c.innerHTML = cart.map(i => `<div class="flex justify-between text-xs p-2 bg-gray-50 dark:bg-black/20 rounded"><span>${i.name} x${i.qty}</span><b>${fmt(i.price * i.qty)}</b></div>`).join('');
-            document.getElementById('cart-total').innerText = fmt(cart.reduce((s,i) => s + (i.price*i.qty), 0));
-        };
         function updateSupplierSelect() { 
             const s = document.getElementById('p-supplier'); 
             if(s) s.innerHTML = '<option value="">Sin proveedor</option>' + suppliers.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); 
