@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HL Panel - Business Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --bg-sidebar: #0f172a;
+            --bg-main: #f8fafc;
+            --accent: #f59e0b;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #1e293b; }
+        .sidebar { background-color: var(--bg-sidebar); }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; }
+        .btn-primary { background-color: var(--accent); color: black; font-weight: 600; transition: all 0.2s; }
+        .btn-primary:hover { background-color: #d97706; transform: translateY(-1px); }
+        
+        #login-overlay { background-color: var(--bg-main); z-index: 9999; }
+        .nav-active { background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent); color: var(--accent) !important; font-weight: 700; }
+        
+        .tab-content { transition: opacity 0.2s ease-in-out; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Pantalla de Login -->
+    <div id="login-overlay" class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl">
+            <div class="flex flex-col items-center mb-8">
+                <div class="p-3 bg-amber-500 rounded-xl mb-4 text-black">
+                    <i data-lucide="bar-chart-big" class="w-8 h-8"></i>
+                </div>
+                <h1 class="text-2xl font-bold uppercase tracking-widest text-center">HL<span class="text-amber-500">Panel</span></h1>
+                <p class="text-xs text-gray-500 mt-2">Módulo de Administración y Analíticas</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">Email Administrador</label>
+                    <input type="email" id="login-email" required class="w-full p-3 rounded-lg border border-gray-200 outline-none" placeholder="tu@email.com">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">Contraseña</label>
+                    <input type="password" id="login-password" required class="w-full p-3 rounded-lg border border-gray-200 outline-none" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary w-full py-4 rounded-xl mt-4">Entrar al Dashboard</button>
+            </form>
+            <div id="login-error" class="mt-4 text-red-500 text-sm text-center hidden"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar Navegación -->
+    <aside class="sidebar w-64 hidden md:flex flex-col text-slate-300">
+        <div class="p-6 flex items-center gap-3">
+            <div class="p-2 bg-amber-500 rounded text-black"><i data-lucide="wrench" class="w-5 h-5"></i></div>
+            <span class="font-bold text-white tracking-tight">HL ADMIN</span>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 mt-4">
+            <button onclick="switchTab('resumen')" id="nav-resumen" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all nav-active text-sm">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Resumen General
+            </button>
+            <button onclick="switchTab('analitica')" id="nav-analitica" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all text-sm">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> Analítica & Rankings
+            </button>
+            <button onclick="switchTab('stock-alert')" id="nav-stock-alert" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all text-sm">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i> Alertas de Stock
+            </button>
+            <button onclick="switchTab('config')" id="nav-config" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all text-sm">
+                <i data-lucide="settings" class="w-4 h-4"></i> Configuración
+            </button>
+        </nav>
+        <div class="p-4 border-t border-slate-700">
+            <button onclick="signOutUser()" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 text-sm">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-10">
+        
+        <!-- SECCIÓN: RESUMEN -->
+        <section id="sec-resumen" class="tab-content">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold">Vista General</h2>
+                <p class="text-gray-500">Indicadores clave de rendimiento del negocio.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                <div class="card p-6 shadow-sm">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Ventas del Mes</p>
+                    <h3 id="stat-month-sales" class="text-2xl font-bold">$ 0,00</h3>
+                </div>
+                <div class="card p-6 shadow-sm">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Margen Est. (35%)</p>
+                    <h3 id="stat-net-income" class="text-2xl font-bold text-green-600">$ 0,00</h3>
+                </div>
+                <div class="card p-6 shadow-sm">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Stock Crítico</p>
+                    <h3 id="stat-low-stock" class="text-2xl font-bold text-amber-600">0 Items</h3>
+                </div>
+                <div class="card p-6 shadow-sm">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Clientes Totales</p>
+                    <h3 id="stat-total-clients" class="text-2xl font-bold">0</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="card p-6 shadow-sm lg:col-span-2">
+                    <h4 class="font-bold mb-6 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i> Ventas Diarias (7 días)</h4>
+                    <canvas id="salesChart" height="150"></canvas>
+                </div>
+                <div class="card p-6 shadow-sm">
+                    <h4 class="font-bold mb-6 flex items-center gap-2"><i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i> Online vs Presencial</h4>
+                    <canvas id="modeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: ANALÍTICA (RANKINGS) -->
+        <section id="sec-analitica" class="tab-content hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold">Inteligencia de Ventas</h2>
+                <p class="text-gray-500">Análisis detallado de productos, proveedores y momentos de facturación.</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Top Productos -->
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b bg-gray-50 font-bold text-xs uppercase flex items-center gap-2">
+                        <i data-lucide="package" class="w-4 h-4"></i> Top 5 Productos más Vendidos
+                    </div>
+                    <table class="w-full text-sm">
+                        <tbody id="top-products-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+                <!-- Top Clientes -->
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b bg-gray-50 font-bold text-xs uppercase flex items-center gap-2">
+                        <i data-lucide="star" class="w-4 h-4"></i> Top 5 Mejores Clientes
+                    </div>
+                    <table class="w-full text-sm">
+                        <tbody id="top-clients-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Top Proveedores -->
+                <div class="card p-6 lg:col-span-1">
+                    <h4 class="font-bold mb-4 text-sm uppercase text-gray-400">Top 3 Proveedores (por volumen)</h4>
+                    <div id="top-suppliers-list" class="space-y-4"></div>
+                </div>
+                <!-- Momentos del Mes -->
+                <div class="card p-6 lg:col-span-2">
+                    <h4 class="font-bold mb-6 text-sm uppercase text-gray-400">Rendimiento por Etapa del Mes</h4>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div class="p-4 bg-slate-50 rounded-xl border">
+                            <p class="text-[10px] font-bold text-gray-400">INICIO (1-10)</p>
+                            <h5 id="moment-start" class="text-lg font-bold mt-2">$ 0</h5>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl border">
+                            <p class="text-[10px] font-bold text-gray-400">MEDIO (11-20)</p>
+                            <h5 id="moment-mid" class="text-lg font-bold mt-2">$ 0</h5>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl border">
+                            <p class="text-[10px] font-bold text-gray-400">CIERRE (21-FIN)</p>
+                            <h5 id="moment-end" class="text-lg font-bold mt-2">$ 0</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: ALERTAS DE STOCK -->
+        <section id="sec-stock-alert" class="tab-content hidden">
+            <header class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold">Stock Crítico</h2>
+                        <p class="text-gray-500">Productos por debajo del umbral de seguridad.</p>
+                    </div>
+                    <div class="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-xs font-bold">
+                        Umbral: <span id="current-threshold-badge">5</span> UN
+                    </div>
+                </div>
+            </header>
+            <div class="card overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-[10px] uppercase font-bold text-gray-400 border-b">
+                        <tr>
+                            <th class="p-4">Producto</th>
+                            <th class="p-4 text-center">Stock Actual</th>
+                            <th class="p-4">Proveedor</th>
+                            <th class="p-4">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="critical-stock-list" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CONFIGURACIÓN -->
+        <section id="sec-config" class="tab-content hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold">Configuración</h2>
+                <p class="text-gray-500">Ajustes globales del ecosistema HL.</p>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-8">
+                    <h4 class="font-bold mb-6 border-b pb-2">Parámetros Operativos</h4>
+                    <form id="form-config" class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase">Umbral de Stock Bajo</label>
+                            <input type="number" id="cfg-threshold" value="5" class="w-full p-3 rounded-lg border mt-1 font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase">Nombre de la Empresa</label>
+                            <input type="text" id="cfg-name" placeholder="HL Beta" class="w-full p-3 rounded-lg border mt-1">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase">Mensaje pie de Remito</label>
+                            <textarea id="cfg-remito-msg" rows="3" class="w-full p-3 rounded-lg border mt-1"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary px-8 py-3 rounded-xl shadow-lg w-full">Guardar Todo</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl font-medium opacity-0 transition-all pointer-events-none"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDsh5-ZzwjO98S1zIXUx6Sw2ICd5SwiHpM",
+            authDomain: "herramientaslibres-61449.firebaseapp.com",
+            projectId: "herramientaslibres-61449",
+            storageBucket: "herramientaslibres-61449.firebasestorage.app",
+            messagingSenderId: "184897754209",
+            appId: "1:184897754209:web:a68503fa066d8568320620"
+        };
+
+        const appId = 'herramientas-libres-pro';
+        let db, auth;
+        let salesChart = null, modeChart = null;
+        let stockThreshold = 5;
+
+        const fmt = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n);
+
+        const initDashboard = async () => {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    loadData();
+                } else {
+                    document.getElementById('login-overlay').classList.remove('hidden');
+                }
+            });
+
+            document.getElementById('login-form').onsubmit = async (e) => {
+                e.preventDefault();
+                try {
+                    await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+                } catch (err) {
+                    document.getElementById('login-error').innerText = "Acceso denegado.";
+                    document.getElementById('login-error').classList.remove('hidden');
+                }
+            };
+        };
+
+        function loadData() {
+            // Escuchar productos
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), sn => {
+                const products = sn.docs.map(d => ({id: d.id, ...d.data()}));
+                renderLowStock(products);
+                document.getElementById('stat-low-stock').innerText = products.filter(p => p.stock < stockThreshold).length;
+            });
+
+            // Escuchar Clientes
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), sn => {
+                document.getElementById('stat-total-clients').innerText = sn.size;
+            });
+
+            // Escuchar Historial para Analítica
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sn => {
+                const history = sn.docs.map(d => ({id: d.id, ...d.data()}));
+                processAnalytics(history);
+            });
+            
+            loadConfig();
+        }
+
+        function processAnalytics(history) {
+            const now = new Date();
+            const currentMonth = now.toISOString().slice(0, 7);
+            const thisMonthSales = history.filter(h => h.date && h.date.toDate().toISOString().slice(0, 7) === currentMonth);
+            
+            // 1. Estadísticas básicas
+            const total = thisMonthSales.reduce((s, h) => s + (h.amount || 0), 0);
+            document.getElementById('stat-month-sales').innerText = fmt(total);
+            document.getElementById('stat-net-income').innerText = fmt(total * 0.35);
+
+            // 2. Online vs Presencial
+            const online = history.filter(h => h.saleMode === 'online').length;
+            const presencial = history.filter(h => h.saleMode === 'presencial').length;
+            renderCharts(history, online, presencial);
+
+            // 3. Rankings
+            const prodMap = {};
+            const clientMap = {};
+            const supplierMap = {};
+            let mStart = 0, mMid = 0, mEnd = 0;
+
+            history.forEach(h => {
+                const hd = h.date?.toDate();
+                if(hd && hd.toISOString().slice(0, 7) === currentMonth) {
+                    const day = hd.getDate();
+                    if(day <= 10) mStart += h.amount;
+                    else if(day <= 20) mMid += h.amount;
+                    else mEnd += h.amount;
+                }
+
+                clientMap[h.customerName] = (clientMap[h.customerName] || 0) + h.amount;
+                if(h.items) {
+                    h.items.forEach(it => {
+                        prodMap[it.name] = (prodMap[it.name] || 0) + it.qty;
+                        if(it.supplierName) {
+                            supplierMap[it.supplierName] = (supplierMap[it.supplierName] || 0) + it.qty;
+                        }
+                    });
+                }
+            });
+
+            renderRankingTables(prodMap, clientMap, supplierMap);
+            document.getElementById('moment-start').innerText = fmt(mStart);
+            document.getElementById('moment-mid').innerText = fmt(mMid);
+            document.getElementById('moment-end').innerText = fmt(mEnd);
+        }
+
+        function renderRankingTables(prods, clients, sups) {
+            const topP = Object.entries(prods).sort((a,b) => b[1]-a[1]).slice(0, 5);
+            const topC = Object.entries(clients).sort((a,b) => b[1]-a[1]).slice(0, 5);
+            const topS = Object.entries(sups).sort((a,b) => b[1]-a[1]).slice(0, 3);
+
+            document.getElementById('top-products-list').innerHTML = topP.map(([name, qty]) => `
+                <tr><td class="p-3 font-bold">${name}</td><td class="p-3 text-right text-amber-600 font-bold">${qty} un</td></tr>
+            `).join('');
+
+            document.getElementById('top-clients-list').innerHTML = topC.map(([name, val]) => `
+                <tr><td class="p-3 font-bold">${name}</td><td class="p-3 text-right text-green-600 font-bold">${fmt(val)}</td></tr>
+            `).join('');
+
+            document.getElementById('top-suppliers-list').innerHTML = topS.map(([name, qty], idx) => `
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+                    <span class="text-xs font-bold">${idx+1}. ${name}</span>
+                    <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded font-bold">${qty} vend.</span>
+                </div>
+            `).join('');
+        }
+
+        function renderLowStock(products) {
+            const low = products.filter(p => p.stock < stockThreshold).sort((a,b) => a.stock - b.stock);
+            document.getElementById('critical-stock-list').innerHTML = low.map(p => `
+                <tr>
+                    <td class="p-4"><div class="font-bold text-sm">${p.name}</div><div class="text-[10px] text-gray-400">${p.brand}</div></td>
+                    <td class="p-4 text-center"><span class="px-3 py-1 rounded-full bg-red-100 text-red-600 font-bold text-xs">${p.stock} UN</span></td>
+                    <td class="p-4 text-xs font-medium text-gray-500">${p.supplierId || 'Particular'}</td>
+                    <td class="p-4"><button class="text-blue-500 hover:underline text-xs font-bold">Solicitar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderCharts(history, online, presencial) {
+            // Ventas 7 días
+            const days = []; const data = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                days.push(d.toLocaleDateString('es-AR', { weekday: 'short' }));
+                const dayTotal = history.filter(h => h.date?.toDate().toDateString() === d.toDateString()).reduce((s, h) => s + h.amount, 0);
+                data.push(dayTotal);
+            }
+
+            if (salesChart) salesChart.destroy();
+            salesChart = new Chart(document.getElementById('salesChart'), {
+                type: 'line',
+                data: { labels: days, datasets: [{ data: data, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 }] },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+
+            // Doughnut Online vs Presencial
+            if (modeChart) modeChart.destroy();
+            modeChart = new Chart(document.getElementById('modeChart'), {
+                type: 'doughnut',
+                data: { labels: ['Online', 'Presencial'], datasets: [{ data: [online, presencial], backgroundColor: ['#3b82f6', '#f59e0b'] }] },
+                options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        async function loadConfig() {
+            try {
+                const docSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'global'));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('cfg-name').value = data.businessName || '';
+                    document.getElementById('cfg-remito-msg').value = data.footerMsg || '';
+                    document.getElementById('cfg-threshold').value = data.stockThreshold || 5;
+                    stockThreshold = data.stockThreshold || 5;
+                    document.getElementById('current-threshold-badge').innerText = stockThreshold;
+                }
+            } catch(e) {}
+        }
+
+        document.getElementById('form-config').onsubmit = async (e) => {
+            e.preventDefault();
+            const threshold = parseInt(document.getElementById('cfg-threshold').value);
+            const data = {
+                businessName: document.getElementById('cfg-name').value,
+                footerMsg: document.getElementById('cfg-remito-msg').value,
+                stockThreshold: threshold,
+                updatedAt: serverTimestamp()
+            };
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'global'), data);
+                stockThreshold = threshold;
+                document.getElementById('current-threshold-badge').innerText = threshold;
+                showToast("Configuración guardada");
+            } catch (err) { showToast("Error al guardar"); }
+        };
+
+        window.switchTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            const section = document.getElementById(`sec-${id}`);
+            if (section) section.classList.remove('hidden');
+            
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
+            const navBtn = document.getElementById(`nav-${id}`);
+            if (navBtn) navBtn.classList.add('nav-active');
+            
+            lucide.createIcons();
+        };
+
+        window.signOutUser = () => signOut(auth);
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.innerText = m; t.style.opacity = "1";
+            setTimeout(() => t.style.opacity = "0", 3000);
+        }
+
+        window.addEventListener('load', initDashboard);
+    </script>
+</body>
+</html>
