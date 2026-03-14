@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HL - Acceso al Sistema</title>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Tarjeta de Ventas -->
+        <a href="index.html" class="bg-white p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all border-4 border-transparent hover:border-amber-500 group">
+            <div class="flex flex-col items-center text-center">
+                <div class="p-6 bg-amber-100 text-amber-600 rounded-full mb-6 group-hover:scale-110 transition-transform">
+                    <i data-lucide="shopping-cart" class="w-12 h-12"></i>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Ventas & Stock</h2>
+                <p class="text-slate-500">Acceso operativo para el día a día, carga de productos y remitos.</p>
+                <span class="mt-8 text-amber-500 font-bold flex items-center gap-2">Entrar ahora <i data-lucide="arrow-right"></i></span>
+            </div>
+        </a>
+
+        <!-- Tarjeta de Dashboard -->
+        <a href="dashboard.html" class="bg-slate-900 p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all border-4 border-transparent hover:border-blue-500 group">
+            <div class="flex flex-col items-center text-center">
+                <div class="p-6 bg-slate-800 text-blue-400 rounded-full mb-6 group-hover:scale-110 transition-transform">
+                    <i data-lucide="bar-chart-3" class="w-12 h-12"></i>
+                </div>
+                <h2 class="text-3xl font-bold mb-4 text-white">Panel Admin</h2>
+                <p class="text-slate-400">Analítica avanzada, inteligencia de ventas y exportación de datos.</p>
+                <span class="mt-8 text-blue-400 font-bold flex items-center gap-2">Entrar ahora <i data-lucide="arrow-right"></i></span>
+            </div>
+        </a>
+
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
