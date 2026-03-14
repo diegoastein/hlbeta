@@ -3,165 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HL Panel - Business Intelligence & Data</title>
+    <title>HL Panel - Business Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
-        :root {
-            --bg-sidebar: #0f172a;
-            --bg-main: #f8fafc;
-            --accent: #f59e0b;
-        }
-
+        :root { --bg-sidebar: #0f172a; --bg-main: #f1f5f9; --accent: #f59e0b; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #1e293b; }
         .sidebar { background-color: var(--bg-sidebar); }
         .card { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; }
-        .btn-primary { background-color: var(--accent); color: black; font-weight: 600; transition: all 0.2s; }
-        .btn-primary:hover { background-color: #d97706; transform: translateY(-1px); }
-        
+        .btn-primary { background-color: var(--accent); color: black; font-weight: 600; }
         #login-overlay { background-color: var(--bg-main); z-index: 9999; }
         .nav-active { background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent); color: var(--accent) !important; font-weight: 700; }
-        
-        .tab-content { transition: opacity 0.2s ease-in-out; }
     </style>
 </head>
 <body class="flex min-h-screen">
 
-    <!-- Pantalla de Login -->
     <div id="login-overlay" class="fixed inset-0 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl">
             <div class="flex flex-col items-center mb-8">
-                <div class="p-3 bg-amber-500 rounded-xl mb-4 text-black">
-                    <i data-lucide="bar-chart-big" class="w-8 h-8"></i>
-                </div>
-                <h1 class="text-2xl font-bold uppercase tracking-widest text-center">HL<span class="text-amber-500">Panel</span></h1>
-                <p class="text-xs text-gray-500 mt-2">Módulo de Administración y Analíticas</p>
+                <div class="p-3 bg-amber-500 rounded-xl mb-4 text-black"><i data-lucide="bar-chart-big" class="w-8 h-8"></i></div>
+                <h1 class="text-2xl font-bold uppercase text-center">HL<span class="text-amber-500">Panel</span></h1>
             </div>
             <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">Email Administrador</label>
-                    <input type="email" id="login-email" required class="w-full p-3 rounded-lg border border-gray-200 outline-none" placeholder="tu@email.com">
-                </div>
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">Contraseña</label>
-                    <input type="password" id="login-password" required class="w-full p-3 rounded-lg border border-gray-200 outline-none" placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn-primary w-full py-4 rounded-xl mt-4 text-sm">Entrar al Dashboard</button>
+                <input type="email" id="login-email" required class="w-full p-3 rounded-lg border outline-none" placeholder="Email">
+                <input type="password" id="login-password" required class="w-full p-3 rounded-lg border outline-none" placeholder="Password">
+                <button type="submit" class="btn-primary w-full py-4 rounded-xl mt-4">Entrar al Dashboard</button>
             </form>
-            <div id="login-error" class="mt-4 text-red-500 text-sm text-center hidden"></div>
         </div>
     </div>
 
-    <!-- Sidebar Navegación -->
-    <aside class="sidebar w-64 hidden md:flex flex-col text-slate-300 shrink-0">
+    <aside class="sidebar w-64 hidden md:flex flex-col text-slate-300">
         <div class="p-6 flex items-center gap-3">
             <div class="p-2 bg-amber-500 rounded text-black"><i data-lucide="wrench" class="w-5 h-5"></i></div>
             <span class="font-bold text-white tracking-tight">HL ADMIN</span>
         </div>
         <nav class="flex-1 px-4 space-y-2 mt-4">
-            <button onclick="switchTab('resumen')" id="nav-resumen" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all nav-active text-sm">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Vista General
-            </button>
-            <button onclick="switchTab('analitica')" id="nav-analitica" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all text-sm">
-                <i data-lucide="trending-up" class="w-4 h-4"></i> Analítica & Rankings
-            </button>
-            <button onclick="switchTab('exportar')" id="nav-exportar" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all text-sm">
-                <i data-lucide="download-cloud" class="w-4 h-4"></i> Búsqueda y Exportar
-            </button>
-            <button onclick="switchTab('stock-alert')" id="nav-stock-alert" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all text-sm">
-                <i data-lucide="alert-circle" class="w-4 h-4"></i> Alertas de Stock
-            </button>
-            <button onclick="switchTab('config')" id="nav-config" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:text-white transition-all text-sm">
-                <i data-lucide="settings" class="w-4 h-4"></i> Configuración
-            </button>
+            <button onclick="switchTab('resumen')" id="nav-resumen" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg nav-active text-sm"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Resumen</button>
+            <button onclick="switchTab('analitica')" id="nav-analitica" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm"><i data-lucide="line-chart" class="w-4 h-4"></i> Analítica</button>
+            <button onclick="switchTab('exportar')" id="nav-exportar" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm"><i data-lucide="download-cloud" class="w-4 h-4"></i> Exportar</button>
+            <button onclick="switchTab('stock-alert')" id="nav-stock-alert" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Alertas Stock</button>
+            <button onclick="switchTab('config')" id="nav-config" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm"><i data-lucide="settings" class="w-4 h-4"></i> Configuración</button>
         </nav>
         <div class="p-4 border-t border-slate-700">
-            <button onclick="signOutUser()" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 text-sm">
-                <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar Sesión
-            </button>
+            <button onclick="signOutUser()" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 text-sm"><i data-lucide="log-out" class="w-4 h-4"></i> Salir</button>
         </div>
     </aside>
 
-    <!-- Contenido Principal -->
     <main class="flex-1 overflow-y-auto p-4 md:p-10">
-        
-        <!-- SECCIÓN: RESUMEN (con Filtro de Tiempo) -->
+        <!-- RESUMEN -->
         <section id="sec-resumen" class="tab-content">
-            <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-3xl font-bold">Vista General</h2>
-                    <p class="text-gray-500">Rendimiento actual del comercio.</p>
-                </div>
-                <div class="flex items-center gap-2 bg-white p-1 rounded-xl border">
-                    <button onclick="setTimeFilter('7')" id="btn-time-7" class="px-4 py-2 text-xs font-bold rounded-lg transition-all bg-amber-500 text-black shadow-sm">7 Días</button>
-                    <button onclick="setTimeFilter('30')" id="btn-time-30" class="px-4 py-2 text-xs font-bold rounded-lg transition-all hover:bg-gray-100">30 Días</button>
-                    <button onclick="setTimeFilter('all')" id="btn-time-all" class="px-4 py-2 text-xs font-bold rounded-lg transition-all hover:bg-gray-100">Todo</button>
+            <header class="mb-8 flex justify-between items-center">
+                <h2 class="text-3xl font-bold">Resumen General</h2>
+                <div class="flex gap-2 bg-white p-1 rounded-xl border">
+                    <button onclick="setTimeFilter('7')" id="btn-time-7" class="px-4 py-2 text-xs font-bold rounded-lg bg-amber-500">7 Días</button>
+                    <button onclick="setTimeFilter('30')" id="btn-time-30" class="px-4 py-2 text-xs font-bold rounded-lg">30 Días</button>
+                    <button onclick="setTimeFilter('all')" id="btn-time-all" class="px-4 py-2 text-xs font-bold rounded-lg">Todo</button>
                 </div>
             </header>
-
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <div class="card p-6 shadow-sm"><p class="text-[10px] text-gray-500 uppercase font-bold">Ventas</p><h3 id="stat-month-sales" class="text-2xl font-bold">$ 0,00</h3></div>
-                <div class="card p-6 shadow-sm"><p class="text-[10px] text-gray-500 uppercase font-bold">Neto Est.</p><h3 id="stat-net-income" class="text-2xl font-bold text-green-600">$ 0,00</h3></div>
-                <div class="card p-6 shadow-sm border-l-4 border-amber-500"><p class="text-[10px] text-gray-500 uppercase font-bold">Bajo Stock</p><h3 id="stat-low-stock" class="text-2xl font-bold text-amber-600">0 Items</h3></div>
-                <div class="card p-6 shadow-sm"><p class="text-[10px] text-gray-500 uppercase font-bold">Clientes</p><h3 id="stat-total-clients" class="text-2xl font-bold">0</h3></div>
+                <div class="card p-6 shadow-sm"><p class="text-xs text-gray-400 uppercase font-bold">Ventas</p><h3 id="stat-month-sales" class="text-2xl font-bold">$ 0,00</h3></div>
+                <div class="card p-6 shadow-sm"><p class="text-xs text-gray-400 uppercase font-bold">Bajo Stock</p><h3 id="stat-low-stock" class="text-2xl font-bold text-amber-600">0 Items</h3></div>
+                <div class="card p-6 shadow-sm"><p class="text-xs text-gray-400 uppercase font-bold">Clientes</p><h3 id="stat-total-clients" class="text-2xl font-bold">0</h3></div>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="card p-6 shadow-sm lg:col-span-2"><canvas id="salesChart" height="150"></canvas></div>
-                <div class="card p-6 shadow-sm"><canvas id="modeChart"></canvas></div>
+                <div class="card p-6 lg:col-span-2"><canvas id="salesChart" height="150"></canvas></div>
+                <div class="card p-6"><canvas id="modeChart"></canvas></div>
             </div>
         </section>
 
-        <!-- SECCIÓN: ANALÍTICA (RANKINGS) -->
+        <!-- ANALITICA -->
         <section id="sec-analitica" class="tab-content hidden">
-            <header class="mb-8"><h2 class="text-3xl font-bold">Inteligencia de Ventas</h2></header>
+            <h2 class="text-3xl font-bold mb-8">Rankings</h2>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <div class="card overflow-hidden">
-                    <div class="p-4 border-b bg-gray-50 font-bold text-xs uppercase">Top 5 Productos</div>
-                    <table class="w-full text-sm"><tbody id="top-products-list" class="divide-y"></tbody></table>
-                </div>
-                <div class="card overflow-hidden">
-                    <div class="p-4 border-b bg-gray-50 font-bold text-xs uppercase">Top 5 Clientes</div>
-                    <table class="w-full text-sm"><tbody id="top-clients-list" class="divide-y"></tbody></table>
-                </div>
+                <div class="card overflow-hidden"><div class="p-4 border-b font-bold text-xs uppercase">Top 5 Productos</div><table class="w-full text-sm"><tbody id="top-products-list" class="divide-y"></tbody></table></div>
+                <div class="card overflow-hidden"><div class="p-4 border-b font-bold text-xs uppercase">Top 5 Clientes</div><table class="w-full text-sm"><tbody id="top-clients-list" class="divide-y"></tbody></table></div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="card p-6"><h4 class="font-bold mb-4 text-sm text-gray-400">Proveedores Top</h4><div id="top-suppliers-list" class="space-y-2"></div></div>
-                <div class="card p-6 lg:col-span-2">
-                    <h4 class="font-bold mb-6 text-sm text-gray-400 text-center">Momentos del Mes</h4>
-                    <div class="grid grid-cols-3 gap-4 text-center">
-                        <div class="p-4 bg-slate-50 rounded-xl border"><p class="text-[10px] font-bold text-gray-400">1-10</p><h5 id="moment-start" class="font-bold">$ 0</h5></div>
-                        <div class="p-4 bg-slate-50 rounded-xl border"><p class="text-[10px] font-bold text-gray-400">11-20</p><h5 id="moment-mid" class="font-bold">$ 0</h5></div>
-                        <div class="p-4 bg-slate-50 rounded-xl border"><p class="text-[10px] font-bold text-gray-400">21-Fin</p><h5 id="moment-end" class="font-bold">$ 0</h5></div>
-                    </div>
-                </div>
-            </div>
+            <div class="card p-6"><h4 class="font-bold mb-4 text-sm text-gray-400">Ranking Proveedores</h4><div id="top-suppliers-list" class="space-y-2"></div></div>
         </section>
 
-        <!-- SECCIÓN: EXPORTAR -->
+        <!-- EXPORTAR -->
         <section id="sec-exportar" class="tab-content hidden">
-            <h2 class="text-3xl font-bold mb-8">Exportar Datos</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="card p-6 text-center"><i data-lucide="package" class="mx-auto mb-4"></i><button onclick="downloadCSV('products')" class="btn-primary w-full py-2 rounded-lg text-xs">Stock (.csv)</button></div>
-                <div class="card p-6 text-center"><i data-lucide="users" class="mx-auto mb-4"></i><button onclick="downloadCSV('customers')" class="btn-primary w-full py-2 rounded-lg text-xs">Clientes (.csv)</button></div>
-                <div class="card p-6 text-center"><i data-lucide="truck" class="mx-auto mb-4"></i><button onclick="downloadCSV('suppliers')" class="btn-primary w-full py-2 rounded-lg text-xs">Proveedores (.csv)</button></div>
-                <div class="card p-6 text-center"><i data-lucide="history" class="mx-auto mb-4"></i><button onclick="downloadCSV('history')" class="btn-primary w-full py-2 rounded-lg text-xs">Historial (.csv)</button></div>
+            <h2 class="text-3xl font-bold mb-8">Exportar Datos (.csv)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+                <div class="card p-6"><button onclick="downloadCSV('products')" class="btn-primary w-full py-2 rounded-lg text-xs">Stock</button></div>
+                <div class="card p-6"><button onclick="downloadCSV('customers')" class="btn-primary w-full py-2 rounded-lg text-xs">Clientes</button></div>
+                <div class="card p-6"><button onclick="downloadCSV('suppliers')" class="btn-primary w-full py-2 rounded-lg text-xs">Proveedores</button></div>
+                <div class="card p-6"><button onclick="downloadCSV('history')" class="btn-primary w-full py-2 rounded-lg text-xs">Ventas</button></div>
             </div>
         </section>
 
-        <!-- SECCIÓN: CONFIGURACIÓN (REVISADA) -->
+        <!-- STOCK ALERT -->
+        <section id="sec-stock-alert" class="tab-content hidden">
+            <h2 class="text-3xl font-bold mb-8">Stock Crítico</h2>
+            <div class="card overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b"><tr><th class="p-4">Producto</th><th class="p-4">Stock</th><th class="p-4">Proveedor</th><th class="p-4">WhatsApp</th></tr></thead>
+                    <tbody id="critical-stock-list" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- CONFIGURACIÓN (Solo Umbral Analítico) -->
         <section id="sec-config" class="tab-content hidden">
-            <h2 class="text-3xl font-bold mb-8">Configuración Global</h2>
-            <div class="max-w-xl card p-8">
-                <form id="form-config" class="space-y-4">
-                    <div><label class="text-xs font-bold text-gray-400 uppercase">Nombre Comercial</label><input type="text" id="cfg-name" class="w-full p-3 rounded-lg border mt-1"></div>
-                    <div><label class="text-xs font-bold text-gray-400 uppercase">Mensaje Pie de Remito</label><textarea id="cfg-remito-msg" rows="3" class="w-full p-3 rounded-lg border mt-1"></textarea></div>
-                    <div><label class="text-xs font-bold text-gray-400 uppercase">Umbral Stock Bajo</label><input type="number" id="cfg-threshold" class="w-full p-3 rounded-lg border mt-1"></div>
-                    <button type="submit" class="btn-primary w-full py-4 rounded-xl mt-4">Sincronizar Ajustes</button>
+            <h2 class="text-3xl font-bold mb-8">Configuración Analítica</h2>
+            <div class="max-w-md card p-8">
+                <form id="form-config-local">
+                    <label class="text-xs font-bold text-gray-400 uppercase">Umbral de Stock Bajo</label>
+                    <p class="text-[10px] opacity-60 mb-2">Este valor solo afecta las alertas mostradas en este panel.</p>
+                    <input type="number" id="cfg-threshold" value="5" class="w-full p-3 rounded-lg border mb-4 outline-none font-bold">
+                    <button type="submit" class="btn-primary w-full py-3 rounded-xl">Guardar Ajuste</button>
                 </form>
             </div>
         </section>
@@ -170,191 +122,79 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getFirestore, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDsh5-ZzwjO98S1zIXUx6Sw2ICd5SwiHpM",
-            authDomain: "herramientaslibres-61449.firebaseapp.com",
-            projectId: "herramientaslibres-61449",
-            storageBucket: "herramientaslibres-61449.firebasestorage.app",
-            messagingSenderId: "184897754209",
-            appId: "1:184897754209:web:a68503fa066d8568320620"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyDsh5-ZzwjO98S1zIXUx6Sw2ICd5SwiHpM", authDomain: "herramientaslibres-61449.firebaseapp.com", projectId: "herramientaslibres-61449", storageBucket: "herramientaslibres-61449.firebasestorage.app", messagingSenderId: "184897754209", appId: "1:184897754209:web:a68503fa066d8568320620" };
         const appId = 'herramientas-libres-pro';
-        let db, auth;
-        let products = [], suppliers = [], historyRaw = [], customers = [];
-        let salesChart = null, modeChart = null;
-        let stockThreshold = 5;
-        let currentTimeFilter = '7';
-
-        const fmt = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n);
+        let db, auth, products = [], suppliers = [], historyRaw = [], customers = [], salesChart, modeChart, currentTimeFilter = '7', stockThreshold = 5;
 
         const init = async () => {
             const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    loadData();
-                } else {
-                    document.getElementById('login-overlay').classList.remove('hidden');
-                }
-            });
-
-            document.getElementById('login-form').onsubmit = async (e) => {
-                e.preventDefault();
-                try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } 
-                catch (err) { alert("Acceso denegado"); }
-            };
-
-            document.getElementById('form-config').onsubmit = handleConfigSubmit;
+            auth = getAuth(app); db = getFirestore(app);
+            onAuthStateChanged(auth, user => { if(user) { document.getElementById('login-overlay').classList.add('hidden'); loadData(); } });
+            document.getElementById('login-form').onsubmit = async e => { e.preventDefault(); try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } catch(err) { alert("Error"); } };
+            document.getElementById('form-config-local').onsubmit = e => { e.preventDefault(); stockThreshold = parseInt(document.getElementById('cfg-threshold').value); localStorage.setItem('hl_threshold', stockThreshold); renderLowStock(); };
+            const saved = localStorage.getItem('hl_threshold'); if(saved) { stockThreshold = parseInt(saved); document.getElementById('cfg-threshold').value = stockThreshold; }
         };
 
         function loadData() {
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'suppliers'), sn => {
-                suppliers = sn.docs.map(d => ({id: d.id, ...d.data()}));
-            });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), sn => {
-                products = sn.docs.map(d => ({id: d.id, ...d.data()}));
-                document.getElementById('stat-low-stock').innerText = products.filter(p => p.stock < stockThreshold).length;
-            });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), sn => {
-                customers = sn.docs.map(d => ({id: d.id, ...d.data()}));
-                document.getElementById('stat-total-clients').innerText = sn.size;
-            });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sn => {
-                historyRaw = sn.docs.map(d => ({id: d.id, ...d.data()}));
-                processAnalytics();
-            });
-            loadConfig();
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'suppliers'), sn => { suppliers = sn.docs.map(d => ({id: d.id, ...d.data()})); renderLowStock(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), sn => { products = sn.docs.map(d => ({id: d.id, ...d.data()})); renderLowStock(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), sn => { customers = sn.docs.map(d => ({id: d.id, ...d.data()})); document.getElementById('stat-total-clients').innerText = sn.size; });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sn => { historyRaw = sn.docs.map(d => ({id: d.id, ...d.data()})); processAnalytics(); });
         }
 
-        async function loadConfig() {
-            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'global'));
-            if (snap.exists()) {
-                const d = snap.data();
-                document.getElementById('cfg-name').value = d.businessName || '';
-                document.getElementById('cfg-remito-msg').value = d.footerMsg || '';
-                document.getElementById('cfg-threshold').value = d.stockThreshold || 5;
-                stockThreshold = d.stockThreshold || 5;
-            }
-        }
-
-        async function handleConfigSubmit(e) {
-            e.preventDefault();
-            const data = {
-                businessName: document.getElementById('cfg-name').value,
-                footerMsg: document.getElementById('cfg-remito-msg').value,
-                stockThreshold: parseInt(document.getElementById('cfg-threshold').value),
-                updatedAt: serverTimestamp()
-            };
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'global'), data);
-                alert("Configuración sincronizada.");
-            } catch (err) { alert("Error al guardar"); }
-        }
-
-        // Analítica y Filtrado de tiempo (Implementación completa)
-        window.setTimeFilter = (days) => {
-            currentTimeFilter = days;
-            ['7', '30', 'all'].forEach(b => {
-                const btn = document.getElementById(`btn-time-${b}`);
-                btn.className = b === days ? "px-4 py-2 text-xs font-bold rounded-lg bg-amber-500 text-black shadow-sm" : "px-4 py-2 text-xs font-bold rounded-lg hover:bg-gray-100 text-slate-500";
-            });
-            processAnalytics();
-        };
+        window.setTimeFilter = (days) => { currentTimeFilter = days; ['7', '30', 'all'].forEach(b => document.getElementById(`btn-time-${b}`).className = b === days ? "px-4 py-2 text-xs font-bold rounded-lg bg-amber-500" : "px-4 py-2 text-xs font-bold rounded-lg"); processAnalytics(); };
 
         function processAnalytics() {
             const now = new Date();
-            let filtered = [...historyRaw];
-            if(currentTimeFilter !== 'all') {
-                const filterDate = new Date();
-                filterDate.setDate(now.getDate() - parseInt(currentTimeFilter));
-                filtered = historyRaw.filter(h => h.date && h.date.toDate() >= filterDate);
-            }
-
+            let filtered = historyRaw.filter(h => currentTimeFilter === 'all' || (h.date && h.date.toDate() >= new Date(now.setDate(now.getDate() - parseInt(currentTimeFilter)))));
             const total = filtered.reduce((s, h) => s + (h.amount || 0), 0);
-            document.getElementById('stat-month-sales').innerText = fmt(total);
-            document.getElementById('stat-net-income').innerText = fmt(total * 0.35);
-
-            // Rankings
-            const prodMap = {}, clientMap = {}, supplierMap = {};
-            let mS = 0, mM = 0, mE = 0;
-
+            document.getElementById('stat-month-sales').innerText = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(total);
+            const prodMap = {}, clientMap = {}, supMap = {};
             filtered.forEach(h => {
-                const hd = h.date?.toDate();
-                if(hd) {
-                    const day = hd.getDate();
-                    if(day <= 10) mS += h.amount; else if(day <= 20) mM += h.amount; else mE += h.amount;
-                }
                 clientMap[h.customerName] = (clientMap[h.customerName] || 0) + h.amount;
-                if(h.items) h.items.forEach(it => {
-                    prodMap[it.name] = (prodMap[it.name] || 0) + it.qty;
-                    if(it.supplierName) supplierMap[it.supplierName] = (supplierMap[it.supplierName] || 0) + it.qty;
-                });
+                if(h.items) h.items.forEach(it => { prodMap[it.name] = (prodMap[it.name] || 0) + it.qty; if(it.supplierName) supMap[it.supplierName] = (supMap[it.supplierName] || 0) + it.qty; });
             });
-
-            document.getElementById('moment-start').innerText = fmt(mS);
-            document.getElementById('moment-mid').innerText = fmt(mM);
-            document.getElementById('moment-end').innerText = fmt(mE);
-            
-            renderRankingTables(prodMap, clientMap, supplierMap);
+            renderRankings(prodMap, clientMap, supMap);
             renderCharts(filtered);
         }
 
-        function renderRankingTables(prods, clients, sups) {
-            const topP = Object.entries(prods).sort((a,b) => b[1]-a[1]).slice(0, 5);
-            const topC = Object.entries(clients).sort((a,b) => b[1]-a[1]).slice(0, 5);
-            const topS = Object.entries(sups).sort((a,b) => b[1]-a[1]).slice(0, 3);
+        function renderRankings(prods, clients, sups) {
+            const getTop = (obj) => Object.entries(obj).sort((a,b) => b[1]-a[1]).slice(0, 5);
+            document.getElementById('top-products-list').innerHTML = getTop(prods).map(([n, q]) => `<tr><td class="p-3 font-bold">${n}</td><td class="p-3 text-right text-amber-600">${q} un</td></tr>`).join('');
+            document.getElementById('top-clients-list').innerHTML = getTop(clients).map(([n, v]) => `<tr><td class="p-3 font-bold">${n}</td><td class="p-3 text-right text-green-600">${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(v)}</td></tr>`).join('');
+            document.getElementById('top-suppliers-list').innerHTML = Object.entries(sups).sort((a,b) => b[1]-a[1]).slice(0, 3).map(([n, q]) => `<div class="flex justify-between p-2 bg-slate-50 border rounded text-xs"><span>${n}</span><b>${q} vend.</b></div>`).join('');
+        }
 
-            document.getElementById('top-products-list').innerHTML = topP.map(([n, q]) => `<tr><td class="p-3 font-bold">${n}</td><td class="p-3 text-right text-amber-600 font-bold">${q} un</td></tr>`).join('') || '<tr><td class="p-4 text-center italic opacity-40">Sin datos</td></tr>';
-            document.getElementById('top-clients-list').innerHTML = topC.map(([n, v]) => `<tr><td class="p-3 font-bold">${n}</td><td class="p-3 text-right text-green-600 font-bold">${fmt(v)}</td></tr>`).join('') || '<tr><td class="p-4 text-center italic opacity-40">Sin datos</td></tr>';
-            document.getElementById('top-suppliers-list').innerHTML = topS.map(([n, q], i) => `<div class="flex justify-between p-2 bg-slate-50 border rounded text-xs"><span>${i+1}. ${n}</span><b>${q} vend.</b></div>`).join('') || '<p class="text-center opacity-40 italic">Sin datos</p>';
+        function renderLowStock() {
+            const low = products.filter(p => p.stock < stockThreshold);
+            document.getElementById('stat-low-stock').innerText = low.length;
+            document.getElementById('critical-stock-list').innerHTML = low.map(p => {
+                const s = suppliers.find(x => x.id === p.supplierId);
+                return `<tr><td class="p-4 font-bold text-sm">${p.name}</td><td class="p-4 text-red-600 font-bold">${p.stock}</td><td class="p-4 text-xs">${s ? s.name : 'S/P'}</td><td class="p-4"><button onclick="window.open('https://wa.me/${s?.whatsapp?.replace(/\D/g,'')}','_blank')" class="text-blue-500 font-bold text-xs">Pedido</button></td></tr>`;
+            }).join('');
         }
 
         function renderCharts(filtered) {
             const online = filtered.filter(h => h.saleMode === 'online').length;
             const presencial = filtered.filter(h => h.saleMode === 'presencial').length;
-
             if (modeChart) modeChart.destroy();
-            modeChart = new Chart(document.getElementById('modeChart'), {
-                type: 'doughnut',
-                data: { labels: ['Online', 'Presencial'], datasets: [{ data: [online, presencial], backgroundColor: ['#3b82f6', '#f59e0b'] }] },
-                options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-            });
-            // Gráfico de línea simplificado por espacio...
+            modeChart = new Chart(document.getElementById('modeChart'), { type: 'doughnut', data: { labels: ['Online', 'Presencial'], datasets: [{ data: [online, presencial], backgroundColor: ['#3b82f6', '#f59e0b'] }] }, options: { cutout: '70%' } });
+            // Chart line logic omitted for brevity
         }
 
-        window.downloadCSV = (collectionName) => {
-            let data = [], headers = "", fileName = "";
-            if(collectionName === 'products') {
-                data = products.map(p => `"${p.id}","${p.name}","${p.brand}",${p.stock},${p.price}`);
-                headers = "ID,Nombre,Marca,Stock,Precio\n";
-                fileName = "Stock_HL.csv";
-            } else if(collectionName === 'history') {
-                data = historyRaw.map(h => `"${h.id}","${h.date?.toDate().toLocaleString()}","${h.customerName}",${h.amount}`);
-                headers = "ID,Fecha,Cliente,Monto\n";
-                fileName = "Ventas_HL.csv";
-            }
+        window.downloadCSV = (col) => {
+            let data = [], headers = "", name = col + ".csv";
+            if(col === 'products') { headers = "Nombre,Marca,Stock,Precio\n"; data = products.map(p => `"${p.name}","${p.brand}",${p.stock},${p.price}`); }
+            else if(col === 'history') { headers = "Fecha,Cliente,Monto\n"; data = historyRaw.map(h => `"${h.date?.toDate().toLocaleString() || ''}","${h.customerName}",${h.amount}`); }
             const blob = new Blob(["\uFEFF" + headers + data.join("\n")], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", fileName);
-            link.click();
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.setAttribute("download", name); link.click();
         };
 
-        window.switchTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            const sec = document.getElementById(`sec-${id}`); if(sec) sec.classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
-            if(document.getElementById(`nav-${id}`)) document.getElementById(`nav-${id}`).classList.add('nav-active');
-            lucide.createIcons();
-        };
+        window.switchTab = (id) => { document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(`sec-${id}`).classList.remove('hidden'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById(`nav-${id}`).classList.add('nav-active'); lucide.createIcons(); };
         window.signOutUser = () => signOut(auth);
-
+        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
         window.addEventListener('load', init);
     </script>
 </body>
