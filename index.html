@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,10 +8,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         
+        /* MODO CLARO POR DEFECTO */
         :root {
             --bg-body: #f9fafb;
             --bg-card: #ffffff;
@@ -18,8 +21,10 @@
             --text-muted: #4b5563;
             --border-color: #e5e7eb;
             --input-bg: #ffffff;
+            --nav-bg: #ffffff;
         }
 
+        /* MODO OSCURO OPCIONAL */
         body.dark-mode {
             --bg-body: #0f172a;
             --bg-card: #1e293b;
@@ -27,6 +32,7 @@
             --text-muted: #94a3b8;
             --border-color: #334155;
             --input-bg: #0f172a;
+            --nav-bg: #1e293b;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
@@ -35,6 +41,15 @@
         .bg-accent { background-color: #f59e0b; }
         .border-adaptive { border-color: var(--border-color) !important; }
         
+        .text-adaptive { color: var(--text-main); }
+        .text-muted-adaptive { color: var(--text-muted); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+
         .btn-primary { 
             background-color: #f59e0b; 
             color: #000; 
@@ -55,11 +70,27 @@
             font-weight: 700;
         }
 
+        .modal-scroll { max-height: 75vh; overflow-y: auto; padding-right: 4px; }
         .tab-content { transition: opacity 0.2s ease-in-out; }
-        .table-header { background-color: #f3f4f6; color: #374151; }
-        body.dark-mode .table-header { background-color: #0f172a; color: #f59e0b; }
+        
+        #login-overlay {
+            background-color: var(--bg-body);
+            z-index: 9999;
+        }
 
-        #login-overlay { background-color: var(--bg-body); z-index: 9999; }
+        /* Mejoras de cabeceras de tabla */
+        .table-header {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #374151; /* gray-700 */
+        }
+        body.dark-mode .table-header {
+            background-color: #0f172a; /* color muy oscuro */
+            color: #f59e0b; /* Acento naranja para contraste máximo */
+        }
+
+        @media (max-width: 768px) {
+            .modal-container { margin-top: 1rem; margin-bottom: 1rem; }
+        }
     </style>
 </head>
 <body class="min-h-screen pb-20 md:pb-0">
@@ -83,7 +114,10 @@
                     <label class="text-xs text-gray-500 uppercase font-bold">Contraseña</label>
                     <input type="password" id="login-password" required class="w-full p-3 rounded-lg outline-none" placeholder="••••••••">
                 </div>
-                <button type="submit" id="login-btn" class="btn-primary w-full py-4 rounded-xl mt-4">Ingresar al Sistema</button>
+                <button type="submit" id="login-btn" class="btn-primary w-full py-4 rounded-xl mt-4 flex justify-center items-center gap-2">
+                    <span id="login-text">Ingresar al Sistema</span>
+                    <div id="login-loader" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                </button>
             </form>
             <div id="login-error" class="mt-4 text-red-500 text-sm text-center hidden"></div>
         </div>
@@ -91,32 +125,38 @@
 
     <!-- Navegación Escritorio -->
     <nav class="bg-card border-b border-adaptive sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
-            <div class="flex items-center gap-2">
-                <div class="p-2 bg-accent rounded-lg"><i data-lucide="wrench" class="text-black w-6 h-6"></i></div>
-                <span class="text-xl font-bold tracking-tight uppercase">HL<span class="accent-color">Beta</span></span>
-            </div>
-            <div class="hidden md:flex space-x-6">
-                <button onclick="switchTab('stock')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-stock">Stock</button>
-                <button onclick="switchTab('proveedores')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-proveedores">Proveedores</button>
-                <button onclick="switchTab('ventas')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-ventas">Ventas</button>
-                <button onclick="switchTab('clientes')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-clientes">Clientes</button>
-                <button onclick="switchTab('historial')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-historial">Historial</button>
-                <button onclick="switchTab('contabilidad')" class="nav-link py-5 px-1 text-sm font-medium" id="tab-contabilidad">Contabilidad</button>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="window.toggleTheme()" class="p-2 rounded-full hover:bg-gray-200/50 transition-colors">
-                    <i id="theme-icon" data-lucide="moon" class="w-5 h-5 text-gray-500"></i>
-                </button>
-                <button onclick="window.confirmAction('¿Cerrar sesión?', signOutUser)" class="text-gray-400 hover:text-red-500 transition-colors">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
-                </button>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-accent rounded-lg">
+                        <i data-lucide="wrench" class="text-black w-6 h-6"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight uppercase">HL<span class="accent-color">Beta</span></span>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <button onclick="switchTab('stock')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-stock">Stock</button>
+                    <button onclick="switchTab('proveedores')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-proveedores">Proveedores</button>
+                    <button onclick="switchTab('ventas')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-ventas">Ventas</button>
+                    <button onclick="switchTab('clientes')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-clientes">Clientes</button>
+                    <button onclick="switchTab('historial')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-historial">Historial</button>
+                    <button onclick="switchTab('contabilidad')" class="nav-link py-5 px-1 text-sm font-medium transition-colors" id="tab-contabilidad">Contabilidad</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- BOTÓN CAMBIO DE TEMA -->
+                    <button onclick="window.toggleTheme()" class="p-2 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/20 transition-colors" title="Cambiar Tema">
+                        <i id="theme-icon" data-lucide="moon" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                    <span id="auth-status" class="hidden lg:inline text-[10px] opacity-40 italic mr-2">Conectando...</span>
+                    <button onclick="signOutUser()" class="text-gray-400 hover:text-red-500 transition-colors">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Navegación Móvil -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-adaptive flex justify-around py-3 z-50 shadow-lg">
+    <!-- Navegación Móvil (Solo Iconos para ver todas las pestañas) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-adaptive flex justify-around py-3 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onclick="switchTab('stock')" id="m-tab-stock" class="p-2 rounded-lg transition-all"><i data-lucide="package" class="w-6 h-6"></i></button>
         <button onclick="switchTab('proveedores')" id="m-tab-proveedores" class="p-2 rounded-lg transition-all"><i data-lucide="truck" class="w-6 h-6"></i></button>
         <button onclick="switchTab('ventas')" id="m-tab-ventas" class="p-2 rounded-lg transition-all"><i data-lucide="shopping-cart" class="w-6 h-6"></i></button>
@@ -129,17 +169,36 @@
         
         <!-- SECCIÓN: STOCK -->
         <section id="sec-stock" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-2xl font-bold">Inventario</h2>
-                <div class="flex gap-2">
-                    <input type="text" id="stock-search" placeholder="Buscar..." class="p-2 rounded text-sm w-48" oninput="window.renderStock()">
-                    <button onclick="prepareNew('modal-product')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Nuevo</button>
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <div class="relative flex-1 min-w-[200px] md:w-64">
+                        <input type="text" id="stock-search" placeholder="Buscar herramienta..." class="w-full p-2 rounded text-sm outline-none pl-8" oninput="window.renderStock()">
+                        <i data-lucide="search" class="absolute left-2 top-2.5 w-4 h-4 text-gray-500"></i>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.exportStock(false)" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded text-xs flex items-center gap-1 transition-colors shadow-sm">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Todo
+                        </button>
+                        <button onclick="window.exportStock(true)" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-xs flex items-center gap-1 transition-colors shadow-sm">
+                            <i data-lucide="filter" class="w-4 h-4"></i> Filtro
+                        </button>
+                    </div>
+                    <button onclick="prepareNew('modal-product')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2 shrink-0 shadow-md"><i data-lucide="plus" class="w-4 h-4"></i> Nuevo</button>
                 </div>
             </div>
             <div class="bg-card rounded-xl border border-adaptive overflow-x-auto shadow-sm">
                 <table class="w-full text-left">
                     <thead class="table-header border-b border-adaptive text-[10px] uppercase font-bold tracking-wider">
-                        <tr><th class="p-4">Imagen</th><th class="p-4">Producto</th><th class="p-4">Marca</th><th class="p-4">Stock</th><th class="p-4">Precio</th><th class="p-4">Acciones</th></tr>
+                        <tr>
+                            <th class="p-4">Imagen</th>
+                            <th class="p-4">Producto</th>
+                            <th class="p-4">Marca</th>
+                            <th class="p-4">Modelo</th>
+                            <th class="p-4">Stock</th>
+                            <th class="p-4">Precio</th>
+                            <th class="p-4">Acciones</th>
+                        </tr>
                     </thead>
                     <tbody id="stock-list"></tbody>
                 </table>
@@ -148,46 +207,119 @@
 
         <!-- SECCIÓN: PROVEEDORES -->
         <section id="sec-proveedores" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-2xl font-bold">Proveedores</h2>
-                <button onclick="prepareNew('modal-supplier')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i data-lucide="user-plus" class="w-4 h-4"></i> Nuevo</button>
+                <div class="flex w-full md:w-auto gap-4">
+                    <div class="relative flex-1 md:w-64">
+                        <input type="text" id="supplier-search" placeholder="Buscar proveedor..." class="w-full p-2 rounded text-sm outline-none pl-8" oninput="window.renderSuppliers()">
+                        <i data-lucide="search" class="absolute left-2 top-2.5 w-4 h-4 text-gray-500"></i>
+                    </div>
+                    <button onclick="prepareNew('modal-supplier')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2 shrink-0 shadow-md"><i data-lucide="user-plus" class="w-4 h-4"></i> Nuevo</button>
+                </div>
             </div>
-            <div id="supplier-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="supplier-list"></div>
         </section>
 
         <!-- SECCIÓN: VENTAS -->
         <section id="sec-ventas" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2">
-                    <div class="bg-card p-6 rounded-xl border border-adaptive shadow-sm">
-                        <input type="text" id="search-product" placeholder="Buscar por nombre o marca..." class="w-full p-4 rounded-lg outline-none text-lg">
+                    <div class="bg-card p-6 rounded-xl border border-adaptive mb-6 shadow-sm">
+                        <div class="relative">
+                            <input type="text" id="search-product" placeholder="Buscar por nombre, marca o código..." class="w-full p-4 rounded-lg outline-none pl-12 text-lg shadow-inner">
+                            <i data-lucide="search" class="absolute left-4 top-4.5 text-gray-500"></i>
+                        </div>
                         <div id="search-results" class="mt-4 space-y-2"></div>
                     </div>
                 </div>
-                <div class="bg-card p-6 rounded-xl border border-adaptive shadow-lg h-fit">
-                    <h2 class="text-xl font-bold mb-4">Carrito</h2>
+
+                <div class="bg-card p-6 rounded-xl border border-adaptive h-fit sticky top-24 shadow-lg">
+                    <h2 class="text-xl font-bold mb-4 flex justify-between">Carrito <span id="cart-count" class="text-xs bg-accent text-black px-2 py-1 rounded-full">0</span></h2>
                     <div id="cart-items" class="space-y-3 mb-6"></div>
-                    <div class="border-t border-adaptive pt-4">
-                        <div class="flex justify-between text-2xl font-bold"><span>Total</span><span id="cart-total" class="accent-color">$ 0,00</span></div>
-                        <button onclick="window.processSale()" class="btn-primary w-full mt-6 py-4 rounded-lg">Finalizar Venta</button>
+                    
+                    <div class="border-t border-adaptive pt-4 space-y-4">
+                        <div class="space-y-3">
+                            <label class="block text-[10px] opacity-60 uppercase font-bold">Tipo de Venta</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="window.setSaleType('presencial')" id="btn-presencial" class="py-2 rounded border border-adaptive text-xs transition-all">Presencial</button>
+                                <button onclick="window.setSaleType('online')" id="btn-online" class="py-2 rounded border border-adaptive text-xs transition-all">Online</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <label class="block text-[10px] opacity-60 uppercase font-bold">Cliente</label>
+                                <input type="text" id="sale-customer-search" placeholder="Buscar o registrar..." class="w-full p-2 text-sm rounded outline-none" oninput="suggestCustomers(this.value)">
+                                <div id="customer-suggestions" class="bg-card rounded mt-1 hidden max-h-40 overflow-y-auto border border-adaptive z-[60] shadow-2xl"></div>
+                            </div>
+                            <div id="new-customer-fields" class="space-y-2 hidden border-l-2 border-amber-500 pl-3 pt-2">
+                                <p class="text-[10px] text-amber-500 font-bold uppercase italic">Nuevo Cliente:</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" id="c-name" placeholder="Nombre" class="w-full p-2 text-xs rounded outline-none">
+                                    <input type="text" id="c-surname" placeholder="Apellido" class="w-full p-2 text-xs rounded outline-none">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" id="c-phone" placeholder="WhatsApp" class="w-full p-2 text-xs rounded outline-none">
+                                    <input type="email" id="c-email" placeholder="Email" class="w-full p-2 text-xs rounded outline-none">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-2xl font-bold pt-2"><span>Total</span><span id="cart-total" class="accent-color">$ 0,00</span></div>
                     </div>
+                    <button onclick="window.processSale()" class="btn-primary w-full mt-6 py-4 rounded-lg flex items-center justify-center gap-2">
+                        <i data-lucide="check-square" class="w-5 h-5"></i> Finalizar Venta
+                    </button>
                 </div>
             </div>
         </section>
 
         <!-- SECCIÓN: CLIENTES -->
         <section id="sec-clientes" class="tab-content hidden">
-            <h2 class="text-2xl font-bold mb-6">Clientes</h2>
-            <div id="customer-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Base de Clientes</h2>
+                <div class="relative w-64">
+                    <input type="text" id="filter-clients" placeholder="Buscar cliente..." class="w-full p-2 rounded text-sm outline-none pl-8" oninput="window.renderCustomers()">
+                    <i data-lucide="search" class="absolute left-2 top-2.5 w-4 h-4 text-gray-500"></i>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="customer-list"></div>
         </section>
 
         <!-- SECCIÓN: HISTORIAL -->
         <section id="sec-historial" class="tab-content hidden">
-            <h2 class="text-2xl font-bold mb-6">Últimos 10 Movimientos</h2>
+            <h2 class="text-2xl font-bold mb-6">Historial de Ventas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-card p-4 rounded-xl border border-adaptive shadow-sm">
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] uppercase opacity-50 font-bold ml-1">Desde</label>
+                    <input type="date" id="hist-from" class="w-full p-2 rounded text-sm" onchange="window.filterHistory()">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] uppercase opacity-50 font-bold ml-1">Hasta</label>
+                    <input type="date" id="hist-to" class="w-full p-2 rounded text-sm" onchange="window.filterHistory()">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] uppercase opacity-50 font-bold ml-1">Producto, Cliente o Proveedor</label>
+                    <input type="text" id="hist-search" placeholder="Buscar..." class="w-full p-2 rounded text-sm" oninput="window.filterHistory()">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] uppercase opacity-50 font-bold ml-1">Tipo</label>
+                    <select id="hist-type" class="w-full p-2 rounded text-sm" onchange="window.filterHistory()">
+                        <option value="">Todos los tipos</option>
+                        <option value="presencial">Presencial</option>
+                        <option value="online">Online</option>
+                    </select>
+                </div>
+            </div>
             <div class="bg-card rounded-xl border border-adaptive overflow-x-auto shadow-sm">
                 <table class="w-full text-left">
                     <thead class="table-header border-b border-adaptive text-[10px] uppercase font-bold tracking-wider">
-                        <tr><th class="p-4">Fecha</th><th class="p-4">Cliente</th><th class="p-4">Detalle</th><th class="p-4">Total</th><th class="p-4 text-center">Acción</th></tr>
+                        <tr>
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4">Tipo</th>
+                            <th class="p-4">Cliente</th>
+                            <th class="p-4">Artículos (Marca/Prov)</th>
+                            <th class="p-4">Total</th>
+                            <th class="p-4 text-center">Anular</th>
+                        </tr>
                     </thead>
                     <tbody id="history-list"></tbody>
                 </table>
@@ -196,16 +328,36 @@
 
         <!-- SECCIÓN: CONTABILIDAD -->
         <section id="sec-contabilidad" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Registro de Egresos</h2>
-                <button onclick="prepareNew('modal-expense')" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i data-lucide="minus-circle" class="w-4 h-4"></i> Nuevo Egreso</button>
+            <div class="flex items-center gap-4 mb-6 bg-card p-4 rounded-xl border border-adaptive shadow-sm">
+                <label class="text-xs opacity-60 uppercase font-bold">Mes de análisis:</label>
+                <input type="month" id="accounting-month" class="p-2 rounded outline-none text-sm" onchange="window.calculateStats(); window.renderExpenses();">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-card p-6 rounded-xl border-l-4 border-green-500 shadow-sm">
+                    <p class="text-xs opacity-60 uppercase font-bold">Ventas Netas</p>
+                    <h3 id="stat-sales" class="text-3xl font-bold text-green-600">$ 0,00</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl border-l-4 border-red-500 shadow-sm">
+                    <p class="text-xs opacity-60 uppercase font-bold">Egresos Totales</p>
+                    <h3 id="stat-expenses" class="text-3xl font-bold text-red-600">$ 0,00</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl border-l-4 border-amber-500 shadow-sm">
+                    <p class="text-xs opacity-60 uppercase font-bold">Balance Operativo</p>
+                    <h3 id="stat-balance" class="text-3xl font-bold text-amber-600">$ 0,00</h3>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Registro de Egresos</h3>
+                <button onclick="prepareNew('modal-expense')" class="btn-primary px-4 py-2 rounded-lg text-sm flex items-center gap-2"><i data-lucide="minus-circle" class="w-4 h-4"></i> Nuevo Egreso</button>
             </div>
             <div class="bg-card rounded-xl border border-adaptive overflow-hidden shadow-sm">
                 <table class="w-full text-left">
                     <thead class="table-header border-b border-adaptive text-[10px] uppercase font-bold tracking-wider">
-                        <tr><th class="p-4">Fecha</th><th class="p-4">Concepto</th><th class="p-4">Monto</th><th class="p-4">Acción</th></tr>
+                        <tr><th class="p-4">Fecha</th><th class="p-4">Concepto</th><th class="p-4">Categoría</th><th class="p-4">Monto</th><th class="p-4 text-center">Acciones</th></tr>
                     </thead>
-                    <tbody id="expenses-table-body"></tbody>
+                    <tbody id="expense-list"></tbody>
                 </table>
             </div>
         </section>
@@ -213,47 +365,146 @@
     </main>
 
     <!-- MODALES -->
-    <div id="modal-confirm" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4">
-        <div class="bg-card w-full max-w-sm rounded-2xl border border-adaptive p-6 shadow-2xl text-center">
-            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+    <div id="modal-product" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-card w-full max-w-2xl rounded-2xl border border-adaptive overflow-hidden max-h-[95vh] flex flex-col modal-container shadow-2xl">
+            <div class="p-6 border-b border-adaptive flex justify-between items-center bg-gray-50 dark:bg-black/20">
+                <h3 class="text-xl font-bold">Detalles del Producto</h3>
+                <button onclick="closeModal('modal-product')"><i data-lucide="x"></i></button>
             </div>
-            <h3 class="text-xl font-bold mb-2 text-adaptive">¿Confirmar acción?</h3>
-            <p id="confirm-msg" class="text-sm opacity-60 mb-8">Esta acción no se puede deshacer.</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('modal-confirm')" class="flex-1 py-3 rounded-xl border border-adaptive font-medium">Cancelar</button>
-                <button id="btn-confirm-exec" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors">Confirmar</button>
+            <div class="flex-1 overflow-y-auto p-6">
+                <form id="form-product" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="p-id">
+                    <div class="md:col-span-2"><label class="text-xs opacity-60">Nombre del Producto</label><input type="text" id="p-name" list="list-product-names" required class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Marca</label><input type="text" id="p-brand" list="list-brands" required class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Modelo</label><input type="text" id="p-model" required class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Código / SKU</label><input type="text" id="p-code" required class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Proveedor</label><select id="p-supplier" class="w-full p-2 rounded outline-none"><option value="">Seleccionar</option></select></div>
+                    <div><label class="text-xs opacity-60">Stock Disponible</label><input type="number" id="p-stock" required class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Precio Costo ($)</label><input type="number" step="0.01" id="p-cost" required class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Precio Venta ($)</label><input type="number" step="0.01" id="p-price" required class="w-full p-2 rounded outline-none"></div>
+                    <div class="md:col-span-2">
+                        <label class="text-xs opacity-60">Fotografía</label>
+                        <div class="flex items-center gap-4">
+                            <label class="flex-1 cursor-pointer bg-gray-100 dark:bg-gray-700/30 p-2 rounded text-center text-xs hover:bg-accent hover:text-black transition-all border border-dashed border-gray-300 dark:border-gray-600">
+                                <i data-lucide="camera" class="inline w-4 h-4 mr-1"></i> Subir Imagen
+                                <input type="file" id="p-file-input" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
+                            </label>
+                            <div id="image-preview-container" class="w-12 h-12 bg-gray-200 dark:bg-black/20 rounded border border-adaptive flex items-center justify-center overflow-hidden"></div>
+                        </div>
+                        <input type="hidden" id="p-image-data">
+                    </div>
+                    <div class="md:col-span-2 flex gap-2 pt-6">
+                        <button type="submit" class="btn-primary flex-1 py-4 rounded-xl shadow-lg hover:scale-[1.01] active:scale-95 transition-all text-lg">
+                            Guardar Producto
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- MODAL PRODUCTO -->
-    <div id="modal-product" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="bg-card w-full max-w-xl rounded-2xl border border-adaptive overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-adaptive flex justify-between items-center bg-gray-50 dark:bg-black/20"><h3 class="font-bold">Producto</h3><button onclick="closeModal('modal-product')"><i data-lucide="x"></i></button></div>
-            <form id="form-product" class="p-6 grid grid-cols-2 gap-4">
-                <input type="hidden" id="p-id">
-                <div class="col-span-2"><label class="text-xs opacity-60 uppercase font-bold">Nombre</label><input type="text" id="p-name" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 uppercase font-bold">Marca</label><input type="text" id="p-brand" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 uppercase font-bold">Stock</label><input type="number" id="p-stock" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 uppercase font-bold">Precio Venta</label><input type="number" step="0.01" id="p-price" required class="w-full p-2 rounded"></div>
-                <div><label class="text-xs opacity-60 uppercase font-bold">Proveedor</label><select id="p-supplier" class="w-full p-2 rounded"></select></div>
-                <div class="col-span-2 pt-4"><button type="submit" class="btn-primary w-full py-3 rounded-lg">Guardar</button></div>
+    <!-- MODAL PROVEEDOR -->
+    <div id="modal-supplier" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-card w-full max-w-lg rounded-2xl border border-adaptive overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-adaptive flex justify-between items-center bg-gray-50 dark:bg-black/20"><h3 class="text-xl font-bold">Proveedor</h3><button onclick="closeModal('modal-supplier')"><i data-lucide="x"></i></button></div>
+            <form id="form-supplier" class="p-6 space-y-4">
+                <input type="hidden" id="s-id">
+                <div><label class="text-xs opacity-60">Razón Social</label><input type="text" id="s-name" required class="w-full p-2 rounded outline-none"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-xs opacity-60">WhatsApp</label><input type="text" id="s-whatsapp" class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Teléfono</label><input type="text" id="s-phone" class="w-full p-2 rounded outline-none"></div>
+                </div>
+                <div><label class="text-xs opacity-60">Email</label><input type="email" id="s-email" class="w-full p-2 rounded outline-none"></div>
+                <div><label class="text-xs opacity-60">Domicilio</label><input type="text" id="s-address" class="w-full p-2 rounded outline-none"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-xs opacity-60">Ciudad</label><input type="text" id="s-city" class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">País</label><input type="text" id="s-country" value="Argentina" class="w-full p-2 rounded outline-none"></div>
+                </div>
+                <div class="flex gap-2 pt-4"><button type="submit" class="btn-primary flex-1 py-3 rounded-lg shadow-md">Guardar Proveedor</button></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL ÉXITO VENTA -->
-    <div id="modal-success-sale" class="fixed inset-0 bg-black/80 z-[1000] hidden items-center justify-center p-4">
-        <div class="bg-card p-8 rounded-2xl border border-adaptive w-full max-w-md shadow-2xl text-center">
-            <div class="p-4 bg-green-500/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6"><i data-lucide="check-circle" class="text-green-500 w-12 h-12"></i></div>
-            <h2 class="text-2xl font-bold mb-2">¡Venta Exitosa!</h2>
-            <button id="btn-download-remito" class="btn-primary w-full py-4 rounded-xl flex items-center justify-center gap-2 mt-4"><i data-lucide="download"></i> Descargar Remito</button>
-            <button onclick="closeModal('modal-success-sale')" class="text-gray-500 pt-4 text-sm font-medium">Volver</button>
+    <div id="modal-client" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-card w-full max-w-lg rounded-2xl border border-adaptive overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-adaptive flex justify-between items-center"><h3 class="text-xl font-bold">Editar Cliente</h3><button onclick="closeModal('modal-client')"><i data-lucide="x"></i></button></div>
+            <form id="form-client" class="p-6 space-y-4">
+                <input type="hidden" id="edit-c-id">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-xs opacity-60">Nombre</label><input type="text" id="edit-c-name" required class="w-full p-2 rounded outline-none"></div>
+                    <div><label class="text-xs opacity-60">Apellido</label><input type="text" id="edit-c-surname" required class="w-full p-2 rounded outline-none"></div>
+                </div>
+                <div><label class="text-xs opacity-60">WhatsApp/Tel</label><input type="text" id="edit-c-phone" class="w-full p-2 rounded outline-none"></div>
+                <div><label class="text-xs opacity-60">Email</label><input type="email" id="edit-c-email" class="w-full p-2 rounded outline-none"></div>
+                <div class="flex gap-2 pt-4"><button type="submit" class="btn-primary flex-1 py-3 rounded-lg shadow-md">Guardar Cambios</button></div>
+            </form>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-8 right-8 bg-accent text-black px-6 py-3 rounded-full shadow-2xl font-bold opacity-0 transition-all z-[200]"></div>
+    <div id="modal-client-history" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-card w-full max-w-2xl rounded-2xl border border-adaptive overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-adaptive flex justify-between items-center">
+                <h3 id="client-history-name" class="font-bold text-adaptive">Historial del Cliente</h3>
+                <button onclick="closeModal('modal-client-history')"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-6 modal-scroll" id="client-history-content"></div>
+        </div>
+    </div>
+
+    <div id="modal-success-sale" class="fixed inset-0 bg-black/80 z-[1000] hidden items-center justify-center p-4">
+        <div class="bg-card p-8 rounded-2xl border border-adaptive w-full max-w-md shadow-2xl text-center">
+            <div class="p-4 bg-green-500/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check-circle" class="text-green-500 w-12 h-12"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">¡Venta Exitosa!</h2>
+            <p class="text-xs opacity-60 mb-8">El registro se ha guardado correctamente.</p>
+            <div class="flex flex-col gap-3">
+                <button id="btn-download-pdf" class="btn-primary py-4 rounded-xl flex items-center justify-center gap-2">
+                    <i data-lucide="download"></i> Descargar Remito
+                </button>
+                <button id="btn-share-pdf" class="bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="share-2"></i> Compartir Remito
+                </button>
+                <button onclick="closeModal('modal-success-sale')" class="text-gray-500 hover:text-adaptive pt-4 text-sm font-medium">
+                    Volver a Ventas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="image-viewer" class="fixed inset-0 bg-black/90 z-[10000] hidden items-center justify-center p-4" onclick="window.closeImageViewer()">
+        <div class="relative max-w-4xl max-h-screen">
+            <button class="absolute -top-10 right-0 text-white hover:text-accent-color"><i data-lucide="x" class="w-8 h-8"></i></button>
+            <img id="enlarged-image" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl border border-gray-700 bg-black">
+        </div>
+    </div>
+
+    <div id="modal-expense" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-card w-full max-w-md rounded-2xl border border-adaptive overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-adaptive flex justify-between items-center bg-gray-50 dark:bg-black/20"><h3>Egreso de Caja</h3><button onclick="closeModal('modal-expense')"><i data-lucide="x"></i></button></div>
+            <form id="form-expense" class="p-6 space-y-4">
+                <input type="hidden" id="e-id">
+                <div><label class="text-xs opacity-60">Concepto</label><input type="text" id="e-concept" required class="w-full p-2 rounded outline-none"></div>
+                <div><label class="text-xs opacity-60">Categoría</label>
+                    <select id="e-category" class="w-full p-2 rounded outline-none">
+                        <option value="Servicios">Servicios (Luz/Internet)</option>
+                        <option value="Impuestos">Impuestos</option>
+                        <option value="Mercadería">Compra de Herramientas</option>
+                        <option value="Local">Alquiler / Mantenimiento</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                <div><label class="text-xs opacity-60">Monto ($)</label><input type="number" step="0.01" id="e-amount" required class="w-full p-2 rounded outline-none"></div>
+                <div class="flex gap-2 pt-4"><button type="submit" class="btn-primary flex-1 py-3 rounded-lg shadow-md">Registrar Gasto</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-24 md:bottom-8 right-8 bg-accent text-black px-6 py-3 rounded-full shadow-2xl font-bold opacity-0 transition-all z-[200]"></div>
+
+    <!-- Datalists para autocompletar -->
+    <datalist id="list-product-names"></datalist>
+    <datalist id="list-brands"></datalist>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
@@ -271,233 +522,453 @@
 
         const appId = 'herramientas-libres-pro';
         let db, auth;
-        let products = [], suppliers = [], historyRaw = [], customers = [], expenses = [], cart = [];
-        let confirmCallback = null;
+        let products = [], suppliers = [], historyRaw = [], customers = [], expenses = [], cart = [], saleType = 'presencial';
+        let selectedCustomerId = null;
         let currentInvoiceData = null;
 
         const fmt = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n);
+
+        window.toggleTheme = () => {
+            const isDark = document.body.classList.toggle('dark-mode');
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                icon.style.color = isDark ? '#f59e0b' : '#6b7280';
+                lucide.createIcons();
+            }
+        };
 
         const startApp = async () => {
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
 
+            // Set default month in accounting
+            const now = new Date();
+            const monthVal = now.toISOString().slice(0, 7);
+            const acMonth = document.getElementById('accounting-month');
+            if(acMonth) acMonth.value = monthVal;
+
             onAuthStateChanged(auth, (user) => {
+                const statusEl = document.getElementById('auth-status');
+                const overlay = document.getElementById('login-overlay');
                 if (user) {
-                    document.getElementById('login-overlay').classList.add('hidden');
+                    if(overlay) overlay.classList.add('hidden');
+                    if(statusEl) statusEl.innerText = 'Online';
                     initListeners();
                     switchTab('stock');
                 } else {
-                    document.getElementById('login-overlay').classList.remove('hidden');
+                    if(overlay) overlay.classList.remove('hidden');
                 }
             });
 
-            document.getElementById('login-form').onsubmit = async (e) => {
-                e.preventDefault();
-                try {
-                    await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
-                } catch (err) { 
-                    document.getElementById('login-error').innerText = "Acceso denegado"; 
-                    document.getElementById('login-error').classList.remove('hidden'); 
-                }
-            };
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    try {
+                        await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+                    } catch (err) {
+                        const errEl = document.getElementById('login-error');
+                        if(errEl) {
+                            errEl.innerText = "Error: Acceso denegado.";
+                            errEl.classList.remove('hidden');
+                        }
+                    }
+                };
+            }
 
-            // Eventos de botones
-            document.getElementById('form-product').onsubmit = handleProductSubmit;
-            document.getElementById('btn-download-remito').onclick = () => window.handleInvoiceDownload();
-            document.getElementById('btn-confirm-exec').onclick = async () => { if (confirmCallback) await confirmCallback(); closeModal('modal-confirm'); };
-            
-            // Buscador ventas
-            document.getElementById('search-product').oninput = (e) => {
-                const t = e.target.value.toLowerCase();
-                const r = document.getElementById('search-results');
-                if(!t) { r.innerHTML = ''; return; }
-                const f = products.filter(p => p.name.toLowerCase().includes(t) || p.brand.toLowerCase().includes(t));
-                r.innerHTML = f.slice(0,5).map(p => `
-                    <div onclick="window.addToCartById('${p.id}')" class="flex justify-between items-center p-3 bg-card border border-adaptive rounded-lg cursor-pointer hover:bg-accent/10">
-                        <span>${p.name} (${p.brand})</span>
-                        <span class="font-bold">${fmt(p.price)}</span>
-                    </div>`).join('');
-            };
+            // Buscador de ventas
+            const sInp = document.getElementById('search-product');
+            if (sInp) {
+                sInp.addEventListener('input', () => {
+                    const t = sInp.value.toLowerCase();
+                    const r = document.getElementById('search-results');
+                    if(!t) { r.innerHTML = ''; return; }
+                    const f = products.filter(p => 
+                        (p.name && p.name.toLowerCase().includes(t)) || 
+                        (p.brand && p.brand.toLowerCase().includes(t)) || 
+                        (p.code && p.code.toLowerCase().includes(t))
+                    );
+                    r.innerHTML = f.slice(0,6).map(p => `
+                        <div onclick="window.addToCartById('${p.id}')" class="flex items-center justify-between p-3 bg-card hover:bg-accent/10 rounded-lg cursor-pointer border border-adaptive hover:border-accent/20 transition-all shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <img src="${p.image || ''}" class="w-10 h-10 rounded object-cover" onerror="this.src='https://via.placeholder.com/40'">
+                                <div>
+                                    <p class="font-bold text-sm text-adaptive">${p.name}</p>
+                                    <p class="text-[10px] opacity-60 uppercase">${p.brand || 'S/M'} | STOCK: ${p.stock}</p>
+                                </div>
+                            </div>
+                            <p class="font-bold accent-color text-sm">${fmt(p.price)}</p>
+                        </div>`).join('');
+                });
+            }
 
+            const forms = [
+                {id: 'form-product', fn: handleProductSubmit},
+                {id: 'form-supplier', fn: handleSupplierSubmit},
+                {id: 'form-expense', fn: handleExpenseSubmit},
+                {id: 'form-client', fn: handleClientEditSubmit}
+            ];
+            forms.forEach(f => { const el = document.getElementById(f.id); if(el) el.onsubmit = f.fn; });
+
+            const bDown = document.getElementById('btn-download-pdf'); if(bDown) bDown.onclick = () => window.handleInvoiceDownload();
+            const bShare = document.getElementById('btn-share-pdf'); if(bShare) bShare.onclick = () => window.handleInvoiceShare();
+
+            window.setSaleType('presencial');
             lucide.createIcons();
         };
 
         function initListeners() {
-            const err = (e) => console.error("Firestore error:", e);
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), sn => { products = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderStock(); updateSupplierSelect(); }, err);
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'suppliers'), sn => { suppliers = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderSuppliers(); updateSupplierSelect(); }, err);
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), sn => { customers = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderCustomers(); }, err);
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), sn => { expenses = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderExpenses(); }, err);
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sn => { 
-                historyRaw = sn.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)); 
-                window.renderHistory(); 
-            }, err);
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), sn => { products = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderStock(); window.updateDatalists(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'suppliers'), sn => { suppliers = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderSuppliers(); window.updateSupplierSelect(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sn => { historyRaw = sn.docs.map(d => ({id:d.id, ...d.data()})); window.filterHistory(); window.calculateStats(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), sn => { customers = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderCustomers(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), sn => { expenses = sn.docs.map(d => ({id:d.id, ...d.data()})); window.renderExpenses(); window.calculateStats(); });
         }
 
         window.renderStock = () => {
-            const sl = document.getElementById('stock-list');
-            const term = document.getElementById('stock-search').value.toLowerCase();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term));
-            sl.innerHTML = filtered.map(p => `
-                <tr class="border-b border-adaptive hover:bg-gray-50 dark:hover:bg-black/10">
-                    <td class="p-4"><img src="${p.image || ''}" class="w-10 h-10 object-cover rounded bg-gray-100" onerror="this.src='https://via.placeholder.com/40'"></td>
-                    <td class="p-4 font-bold text-sm">${p.name}</td>
-                    <td class="p-4 opacity-60 text-xs">${p.brand}</td>
-                    <td class="p-4 font-bold text-xs ${p.stock < 5 ? 'text-red-500':'text-green-600'}">${p.stock} UN</td>
-                    <td class="p-4 accent-color font-bold text-sm">${fmt(p.price)}</td>
-                    <td class="p-4 flex gap-2">
-                        <button onclick="window.editProductById('${p.id}')" class="text-amber-500"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                        <button onclick="window.confirmAction('¿Eliminar producto?', () => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', '${p.id}')))" class="text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                </tr>`).join('');
+            const sl = document.getElementById('stock-list'); if(!sl) return;
+            const searchEl = document.getElementById('stock-search');
+            const search = searchEl ? searchEl.value.toLowerCase() : "";
+            let filtered = search ? products.filter(p => (p.name && p.name.toLowerCase().includes(search)) || (p.brand && p.brand.toLowerCase().includes(search)) || (p.code && p.code.toLowerCase().includes(search))) : [...products].sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).slice(0, 30);
+            sl.innerHTML = filtered.map(p => `<tr class="border-b border-adaptive hover:bg-gray-50 dark:hover:bg-black/5 transition-colors"><td class="p-4"><img src="${p.image || ''}" onclick="window.viewLargeImage('${p.image}')" class="w-10 h-10 object-cover rounded bg-black/5 cursor-zoom-in" onerror="this.src='https://via.placeholder.com/40'"></td><td class="p-4 font-medium text-adaptive">${p.name}</td><td class="p-4 text-xs uppercase opacity-60">${p.brand || 'S/M'}</td><td class="p-4 text-xs uppercase opacity-60">${p.model || 'S/M'}</td><td class="p-4 font-bold text-xs ${p.stock < 5 ? 'text-red-500' : 'text-green-600'}">${p.stock} UN</td><td class="p-4 font-bold text-sm accent-color">${fmt(p.price)}</td><td class="p-4 flex gap-3"><button onclick='window.editProductById("${p.id}")' class="text-amber-500 hover:scale-110 transition-transform"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="window.deleteProduct('${p.id}')" class="text-red-400 hover:scale-110 transition-transform"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
             lucide.createIcons();
         };
 
         window.renderSuppliers = () => {
-            document.getElementById('supplier-list').innerHTML = suppliers.map(s => `
-                <div class="bg-card p-6 rounded-xl border border-adaptive relative shadow-sm">
-                    <button onclick="window.confirmAction('¿Borrar proveedor?', () => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'suppliers', '${s.id}')))" class="absolute top-4 right-4 text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    <h4 class="font-bold">${s.name}</h4>
-                    <p class="text-xs opacity-60 mt-1">${s.whatsapp || 'Sin WhatsApp'}</p>
-                </div>`).join('') || '<p class="opacity-40 italic">No hay proveedores.</p>';
+            const spl = document.getElementById('supplier-list'); if(!spl) return;
+            const searchEl = document.getElementById('supplier-search');
+            const search = searchEl ? searchEl.value.toLowerCase() : "";
+            const filtered = suppliers.filter(s => (s.name && s.name.toLowerCase().includes(search)) || (s.city && s.city.toLowerCase().includes(search)));
+            spl.innerHTML = filtered.map(s => `<div class="bg-card p-6 rounded-xl border border-adaptive relative group shadow-sm"><div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick='window.editSupplier(${JSON.stringify(s).replace(/'/g, "&apos;")})' class="text-amber-500"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="window.deleteSupplier('${s.id}')" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div><h4 class="text-lg font-bold mb-2 text-adaptive">${s.name}</h4><div class="space-y-1 text-xs opacity-60"><p><i data-lucide="phone" class="inline w-3 h-3 mr-1"></i> ${s.whatsapp || '-'}</p><p><i data-lucide="map-pin" class="inline w-3 h-3 mr-1"></i> ${s.city || 'S/C'}</p></div></div>`).join('');
             lucide.createIcons();
         };
 
         window.renderCustomers = () => {
-            document.getElementById('customer-list').innerHTML = customers.map(c => `
-                <div class="bg-card p-6 rounded-xl border border-adaptive shadow-sm">
-                    <h4 class="font-bold">${c.name} ${c.surname || ''}</h4>
-                    <p class="text-xs opacity-60 mt-1">${c.phone || 'Sin Teléfono'}</p>
-                </div>`).join('') || '<p class="opacity-40 italic">No hay clientes.</p>';
+            const el = document.getElementById('filter-clients'); if (!el) return;
+            const term = el.value.toLowerCase();
+            let filtered = customers.filter(c => (c.name && c.name.toLowerCase().includes(term)) || (c.surname && c.surname.toLowerCase().includes(term)));
+            if (!term) filtered = filtered.slice(0, 15);
+            const cl = document.getElementById('customer-list');
+            if (cl) cl.innerHTML = filtered.map(c => `<div class="bg-card p-6 rounded-xl border border-adaptive relative group shadow-sm"><div class="absolute top-4 right-4 flex gap-2"><button onclick='window.editCustomerById("${c.id}")' class="opacity-40 hover:opacity-100 hover:text-amber-500 transition-all"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="window.viewClientHistory('${c.id}', '${c.name} ${c.surname || ''}')" class="text-amber-500"><i data-lucide="history" class="w-5 h-5"></i></button></div><h4 class="text-lg font-bold mb-1 text-adaptive">${c.name} ${c.surname || ''}</h4><div class="text-xs opacity-60 space-y-1"><p><i data-lucide="phone" class="inline w-3 h-3 mr-1"></i> ${c.phone || 'S/T'}</p><p><i data-lucide="mail" class="inline w-3 h-3 mr-1"></i> ${c.email || 'S/E'}</p></div></div>`).join('');
+            lucide.createIcons();
         };
 
         window.renderExpenses = () => {
-            document.getElementById('expenses-table-body').innerHTML = expenses.map(e => `
-                <tr class="border-b border-adaptive">
-                    <td class="p-4 text-xs opacity-60">${e.date?.toDate().toLocaleDateString() || '-'}</td>
-                    <td class="p-4 font-medium">${e.concept}</td>
-                    <td class="p-4 font-bold text-red-500">${fmt(e.amount)}</td>
-                    <td class="p-4"><button onclick="window.confirmAction('¿Borrar egreso?', () => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', '${e.id}')))" class="text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
-                </tr>`).join('');
+            const el = document.getElementById('expense-list'); if(!el) return;
+            const selectedMonth = document.getElementById('accounting-month').value;
+            const filtered = expenses.filter(e => e.date && e.date.toDate().toISOString().slice(0, 7) === selectedMonth);
+            el.innerHTML = filtered.map(e => `<tr class="border-b border-adaptive hover:bg-gray-50 dark:hover:bg-black/5 transition-colors"><td class="p-4 text-xs opacity-60">${e.date?.toDate ? e.date.toDate().toLocaleDateString() : '-'}</td><td class="p-4 font-medium text-adaptive">${e.concept}</td><td class="p-4"><span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded opacity-70 uppercase text-adaptive">${e.category}</span></td><td class="p-4 font-bold text-red-500">${fmt(e.amount)}</td><td class="p-4 flex gap-2"><button onclick='window.editExpense(${JSON.stringify(e).replace(/'/g, "&apos;")})' class="opacity-40 hover:opacity-100 hover:text-amber-500"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="window.deleteExpense('${e.id}')" class="opacity-40 hover:opacity-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
             lucide.createIcons();
         };
 
-        window.renderHistory = () => {
-            document.getElementById('history-list').innerHTML = historyRaw.slice(0, 10).map(h => `
-                <tr class="border-b border-adaptive text-xs">
-                    <td class="p-4 opacity-60">${h.date?.toDate().toLocaleDateString() || 'Hoy'}</td>
-                    <td class="p-4 font-bold">${h.customerName || 'Mostrador'}</td>
-                    <td class="p-4 opacity-70 italic">${h.detail}</td>
-                    <td class="p-4 font-bold accent-color">${fmt(h.amount)}</td>
-                    <td class="p-4 text-center"><button onclick="window.confirmAction('¿Anular venta?', () => window.undoSale('${h.id}'))" class="text-red-400 hover:scale-110"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
-                </tr>`).join('');
-            lucide.createIcons();
+        window.calculateStats = () => {
+            const m = document.getElementById('accounting-month').value;
+            const fs = historyRaw.filter(h => h.date && h.date.toDate().toISOString().slice(0, 7) === m);
+            const fe = expenses.filter(e => e.date && e.date.toDate().toISOString().slice(0, 7) === m);
+            const ts = fs.reduce((s, h) => s + (h.amount || 0), 0);
+            const te = fe.reduce((s, e) => s + (e.amount || 0), 0);
+            document.getElementById('stat-sales').innerText = fmt(ts);
+            document.getElementById('stat-expenses').innerText = fmt(te);
+            document.getElementById('stat-balance').innerText = fmt(ts - te);
         };
 
-        window.editProductById = (id) => {
-            const p = products.find(x => x.id === id);
-            if(!p) return;
-            document.getElementById('p-id').value = p.id;
-            document.getElementById('p-name').value = p.name || '';
-            document.getElementById('p-brand').value = p.brand || '';
-            document.getElementById('p-stock').value = p.stock || 0;
-            document.getElementById('p-price').value = p.price || 0;
-            document.getElementById('p-supplier').value = p.supplierId || '';
-            openModal('modal-product');
+        window.editCustomerById = (id) => {
+            const c = customers.find(x => x.id === id); if(!c) return;
+            document.getElementById('edit-c-id').value = c.id;
+            document.getElementById('edit-c-name').value = c.name || '';
+            document.getElementById('edit-c-surname').value = c.surname || '';
+            document.getElementById('edit-c-phone').value = c.phone || '';
+            document.getElementById('edit-c-email').value = c.email || '';
+            window.openModal('modal-client');
         };
+
+        async function handleClientEditSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-c-id').value; if(!id) return;
+            const data = { name: document.getElementById('edit-c-name').value, surname: document.getElementById('edit-c-surname').value, phone: document.getElementById('edit-c-phone').value, email: document.getElementById('edit-c-email').value, updatedAt: serverTimestamp() };
+            try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'customers', id), data); closeModal('modal-client'); window.showToast("Cliente actualizado"); } catch(err) { window.showToast("Error"); }
+        }
 
         async function handleProductSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('p-id').value;
             const data = { 
-                name: document.getElementById('p-name').value, brand: document.getElementById('p-brand').value,
-                stock: parseInt(document.getElementById('p-stock').value), price: parseFloat(document.getElementById('p-price').value),
-                supplierId: document.getElementById('p-supplier').value, updatedAt: serverTimestamp() 
+                name: document.getElementById('p-name').value, 
+                brand: document.getElementById('p-brand').value, 
+                model: document.getElementById('p-model').value, 
+                code: document.getElementById('p-code').value, 
+                supplierId: document.getElementById('p-supplier').value, 
+                stock: parseInt(document.getElementById('p-stock').value), 
+                cost: parseFloat(document.getElementById('p-cost').value), 
+                price: parseFloat(document.getElementById('p-price').value), 
+                image: document.getElementById('p-image-data').value, 
+                updatedAt: serverTimestamp() 
             };
             if(id) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), data);
-            else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), { ...data, createdAt: serverTimestamp() });
-            closeModal('modal-product');
-            showToast("Guardado con éxito");
+            else { data.createdAt = serverTimestamp(); await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), data); }
+            closeModal('modal-product'); window.showToast("Stock actualizado");
         }
 
-        window.undoSale = async (id) => {
-            const sale = historyRaw.find(h => h.id === id);
-            if (!sale) return;
-            try {
-                if (sale.items) {
-                    for (const item of sale.items) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', item.id), { stock: increment(item.qty) });
-                    }
-                }
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', id));
-                showToast("Venta anulada y stock devuelto.");
-            } catch (err) { showToast("Error al anular"); }
+        async function handleSupplierSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('s-id').value;
+            const data = { name: document.getElementById('s-name').value, whatsapp: document.getElementById('s-whatsapp').value, phone: document.getElementById('s-phone').value, email: document.getElementById('s-email').value, address: document.getElementById('s-address').value, city: document.getElementById('s-city').value, country: document.getElementById('s-country').value, updatedAt: serverTimestamp() };
+            if(id) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'suppliers', id), data);
+            else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'suppliers'), { ...data, createdAt: serverTimestamp() });
+            closeModal('modal-supplier'); window.showToast("Proveedor guardado");
+        }
+
+        async function handleExpenseSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('e-id').value;
+            const data = { concept: document.getElementById('e-concept').value, category: document.getElementById('e-category').value, amount: parseFloat(document.getElementById('e-amount').value), date: serverTimestamp() };
+            if(id) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', id), data);
+            else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), data);
+            closeModal('modal-expense'); window.showToast("Gasto registrado");
+        }
+
+        window.setSaleType = (t) => { 
+            saleType = t; 
+            const bP = document.getElementById('btn-presencial'); const bO = document.getElementById('btn-online'); 
+            if(bP) bP.className = t === 'presencial' ? 'py-2 rounded border border-amber-500 bg-amber-500/10 text-amber-500 font-bold text-xs shadow-inner' : 'py-2 rounded border border-adaptive text-adaptive text-xs';
+            if(bO) bO.className = t === 'online' ? 'py-2 rounded border border-amber-500 bg-amber-500/10 text-amber-500 font-bold text-xs shadow-inner' : 'py-2 rounded border border-adaptive text-adaptive text-xs';
         };
 
+        window.suggestCustomers = (term) => {
+            const sug = document.getElementById('customer-suggestions'); const fields = document.getElementById('new-customer-fields');
+            selectedCustomerId = null; fields.classList.add('hidden');
+            if(!term) { sug.classList.add('hidden'); return; }
+            const matches = customers.filter(c => (c.name && c.name.toLowerCase().includes(term.toLowerCase())) || (c.surname && c.surname.toLowerCase().includes(term.toLowerCase())) || (c.phone && c.phone.includes(term)));
+            let html = matches.map(c => `<div onclick="window.selectCustomer('${c.id}', '${c.name}', '${c.surname || ''}')" class="p-3 hover:bg-accent hover:text-black cursor-pointer text-xs border-b border-adaptive font-bold text-adaptive">${c.name} ${c.surname || ''} (${c.phone || 'S/T'})</div>`).join('');
+            html += `<div onclick="window.showNewCustomerFields('${term}')" class="p-3 hover:bg-green-600 hover:text-white cursor-pointer text-xs font-bold text-green-600 italic">+ Nuevo: "${term}"</div>`;
+            sug.innerHTML = html; sug.classList.remove('hidden');
+        };
+
+        window.showNewCustomerFields = (term) => { selectedCustomerId = null; document.getElementById('customer-suggestions').classList.add('hidden'); document.getElementById('new-customer-fields').classList.remove('hidden'); const nameInp = document.getElementById('c-name'); if(nameInp) nameInp.value = term; };
+        window.selectCustomer = (id, name, surname) => { selectedCustomerId = id; document.getElementById('sale-customer-search').value = `${name} ${surname}`; document.getElementById('customer-suggestions').classList.add('hidden'); document.getElementById('new-customer-fields').classList.add('hidden'); };
+
         window.addToCartById = (id) => {
-            const p = products.find(x => x.id === id);
-            if(!p || p.stock <= 0) return showToast("Sin stock");
+            const p = products.find(x => x.id === id); if(!p) return;
             const it = cart.find(i => i.id === p.id);
-            if(it) it.qty++; else cart.push({...p, qty: 1});
+            if(it) { if(it.qty < p.stock) it.qty++; else window.showToast("Stock insuficiente"); }
+            else { if(p.stock > 0) cart.push({ ...p, qty: 1 }); else window.showToast("Sin stock"); }
+            const sInp = document.getElementById('search-product'); if(sInp) sInp.value = '';
+            const sRes = document.getElementById('search-results'); if(sRes) sRes.innerHTML = '';
             window.renderCart();
         };
 
-        window.renderCart = () => {
-            const c = document.getElementById('cart-items');
-            c.innerHTML = cart.map(i => `<div class="flex justify-between text-xs p-2 bg-gray-50 dark:bg-black/20 rounded"><span>${i.name} x${i.qty}</span><b>${fmt(i.price * i.qty)}</b></div>`).join('');
-            document.getElementById('cart-total').innerText = fmt(cart.reduce((s,i) => s + (i.price*i.qty), 0));
-        };
-
         window.processSale = async () => {
-            if(!cart.length) return showToast("Carrito vacío");
-            const total = cart.reduce((s,i) => s + (i.price*i.qty), 0);
-            const sData = { 
-                customerName: "Mostrador", detail: cart.map(i => `${i.qty}x ${i.name}`).join(', '),
-                amount: total, items: [...cart], date: serverTimestamp(), saleMode: 'presencial'
-            };
-            for(const it of cart) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', it.id), { stock: increment(-it.qty) }); }
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sData);
-            currentInvoiceData = { items: [...cart], total, customer: "Mostrador" };
-            cart = []; window.renderCart();
-            openModal('modal-success-sale');
+            if(!db || !auth.currentUser) return window.showToast("Sin conexión");
+            if(cart.length === 0) return window.showToast("Carrito vacío");
+            const searchVal = document.getElementById('sale-customer-search').value.trim();
+            if(!searchVal && !selectedCustomerId) return window.showToast("Falta el cliente");
+            try {
+                let cId = selectedCustomerId; let cFull = searchVal;
+                if(!cId) {
+                    const fn = document.getElementById('c-name').value.trim(); const ln = document.getElementById('c-surname').value.trim();
+                    if(!fn || !ln) return window.showToast("Datos incompletos");
+                    const newC = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), { name: fn, surname: ln, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value, createdAt: serverTimestamp() });
+                    cId = newC.id; cFull = `${fn} ${ln}`;
+                }
+                
+                // Mapear proveedores para guardarlos en el historial y facilitar búsqueda
+                const cartWithSuppliers = cart.map(it => {
+                    const sup = suppliers.find(s => s.id === it.supplierId);
+                    return { ...it, supplierName: sup ? sup.name : 'S/P' };
+                });
+
+                for(const it of cart) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', it.id), { stock: increment(-it.qty) }); }
+                const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+                
+                const sData = { 
+                    type: 'venta', 
+                    saleMode: saleType, 
+                    customerId: cId, 
+                    customerName: cFull, 
+                    detail: cartWithSuppliers.map(i => `${i.qty}x ${i.name} [${i.brand}] (${i.supplierName})`).join(', '), 
+                    amount: total, 
+                    items: cartWithSuppliers, 
+                    date: serverTimestamp() 
+                };
+                
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'history'), sData);
+                currentInvoiceData = { items: [...cartWithSuppliers], total: total, customer: cFull };
+                cart = []; window.renderCart();
+                document.getElementById('sale-customer-search').value = ''; document.getElementById('new-customer-fields').classList.add('hidden');
+                openModal('modal-success-sale');
+            } catch(e) { window.showToast("Error al procesar"); }
         };
 
-        window.handleInvoiceDownload = () => {
-            const { jsPDF } = window.jspdf; const docPDF = new jsPDF();
-            docPDF.setFillColor(245, 158, 11); docPDF.rect(0, 0, 210, 30, 'F');
-            docPDF.setTextColor(0); docPDF.setFontSize(18); docPDF.text("HERRAMIENTAS LIBRES", 15, 15);
-            docPDF.setFontSize(12); docPDF.text("REMITO - DOCUMENTO NO FISCAL", 15, 23);
-            docPDF.autoTable({ startY: 40, head: [['Producto', 'Cant.', 'Precio', 'Subtotal']], body: currentInvoiceData.items.map(i => [i.name, i.qty, fmt(i.price), fmt(i.price * i.qty)]) });
-            docPDF.text(`TOTAL: ${fmt(currentInvoiceData.total)}`, 140, docPDF.lastAutoTable.finalY + 10);
-            docPDF.setFontSize(8); docPDF.setTextColor(100);
-            docPDF.text("Este documento es un REMITO sin valor fiscal.", 15, docPDF.lastAutoTable.finalY + 20);
-            docPDF.save("Remito.pdf");
+        window.undoSale = async (saleId) => {
+            if (!confirm("¿Estás seguro de que quieres anular esta venta? El stock se devolverá al inventario.")) return;
+            
+            const sale = historyRaw.find(h => h.id === saleId);
+            if (!sale) return window.showToast("Error: Venta no encontrada");
+            
+            try {
+                // 1. Devolver el stock por cada item vendido
+                if (sale.items && sale.items.length > 0) {
+                    for (const item of sale.items) {
+                        // Verificamos si el producto aun existe antes de intentar actualizar stock
+                        const prodRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', item.id);
+                        await updateDoc(prodRef, { 
+                            stock: increment(item.qty) 
+                        });
+                    }
+                }
+                
+                // 2. Borrar el registro de la venta
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', saleId));
+                
+                window.showToast("Venta anulada y stock devuelto.");
+            } catch (err) {
+                console.error(err);
+                window.showToast("Error al anular la venta");
+            }
         };
 
-        window.switchTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            const sec = document.getElementById(`sec-${id}`); if(sec) sec.classList.remove('hidden');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('tab-active'));
-            if(document.getElementById(`tab-${id}`)) document.getElementById(`tab-${id}`).classList.add('tab-active');
-            document.querySelectorAll('[id^="m-tab-"]').forEach(btn => btn.classList.remove('bg-accent', 'text-black'));
-            const mTab = document.getElementById(`m-tab-${id}`); if(mTab) mTab.classList.add('bg-accent', 'text-black');
+        window.handleInvoiceDownload = () => { if(currentInvoiceData) window.generateInvoice(currentInvoiceData.items, currentInvoiceData.total, currentInvoiceData.customer, true); };
+        window.handleInvoiceShare = async () => {
+            if(!currentInvoiceData) return;
+            const pdfBlob = window.generateInvoice(currentInvoiceData.items, currentInvoiceData.total, currentInvoiceData.customer, false);
+            if (navigator.share) {
+                const f = new File([pdfBlob], `Remito_${currentInvoiceData.customer.replace(/\s+/g, '_')}.pdf`, { type: 'application/pdf' });
+                try { await navigator.share({ files: [f], title: 'Remito HL' }); } catch (err) {}
+            } else { window.showToast("Compartir no disponible"); }
+        };
+
+        window.generateInvoice = (items, total, customer, download = true) => {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            doc.setFillColor(245, 158, 11); doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(0, 0, 0); doc.setFontSize(18); doc.text("HERRAMIENTAS LIBRES", 15, 12);
+            doc.setFontSize(16); doc.text("REMITO", 15, 20);
+            doc.setFontSize(10); doc.text("Documento no válido como factura", 15, 26);
+            doc.setTextColor(0, 0, 0); doc.setFontSize(10); doc.text(`Cliente: ${customer}`, 140, 15); doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 140, 22);
+            doc.autoTable({ startY: 40, head: [['Producto', 'Marca', 'Cant.', 'Precio', 'Subtotal']], body: items.map(i => [i.name, i.brand || '-', i.qty, fmt(i.price), fmt(i.price * i.qty)]), theme: 'striped', headStyles: { fillColor: [0, 0, 0] } });
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(14); doc.text(`TOTAL REMITADO: ${fmt(total)}`, 140, finalY);
+            doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+            doc.text("Este documento es un REMITO de entrega sin valor fiscal.", 15, finalY + 10);
+            doc.text("Sin valor fiscal. Comprobante de uso interno y control de mercadería.", 15, finalY + 15);
+            if (download) doc.save(`Remito_${customer}.pdf`); else return doc.output('blob');
+        };
+
+        window.switchTab = (id) => { 
+            // Escritorio
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); 
+            const t = document.getElementById(`sec-${id}`); 
+            if (t) t.classList.remove('hidden'); 
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('tab-active')); 
+            const tabBtn = document.getElementById(`tab-${id}`); 
+            if(tabBtn) tabBtn.classList.add('tab-active'); 
+            
+            // Movil
+            document.querySelectorAll('[id^="m-tab-"]').forEach(btn => {
+                btn.classList.remove('bg-accent', 'text-black', 'shadow-inner');
+                btn.classList.add('text-adaptive');
+            });
+            const mTab = document.getElementById(`m-tab-${id}`);
+            if(mTab) {
+                mTab.classList.remove('text-adaptive');
+                mTab.classList.add('bg-accent', 'text-black', 'shadow-inner');
+            }
+
+            lucide.createIcons(); 
+        };
+
+        window.openModal = (id) => { const el = document.getElementById(id); if (el) { el.classList.remove('hidden'); el.classList.add('flex'); lucide.createIcons(); } };
+        window.prepareNew = (id) => { const el = document.getElementById(id); if (el) { const form = el.querySelector('form'); if(form) form.reset(); const hid = el.querySelector('input[type="hidden"]'); if(hid) hid.value = ''; const pc = document.getElementById('image-preview-container'); if (pc && id === 'modal-product') pc.innerHTML = ''; window.openModal(id); } };
+        window.closeModal = (id) => { const el = document.getElementById(id); if (el) { el.classList.add('hidden'); el.classList.remove('flex'); } };
+        
+        window.handleImageUpload = (e) => { 
+            const f = e.target.files[0]; if(!f) return; 
+            const r = new FileReader(); 
+            r.onload = (ev) => { 
+                const i = new Image(); 
+                i.onload = () => { 
+                    const c = document.createElement('canvas'); const w = 300; const s = w / i.width; 
+                    c.width = w; c.height = i.height * s; const ctx = c.getContext('2d'); ctx.drawImage(i, 0, 0, c.width, c.height); 
+                    const b = c.toDataURL('image/jpeg', 0.6); document.getElementById('p-image-data').value = b; 
+                    const pc = document.getElementById('image-preview-container'); if (pc) pc.innerHTML = `<img src="${b}" class="w-full h-full object-cover">`; 
+                }; 
+                i.src = ev.target.result; 
+            }; 
+            r.readAsDataURL(f); 
+        };
+
+        window.editProductById = (id) => {
+            const p = products.find(x => x.id === id); if(!p) return;
+            const f = { 'p-id': p.id, 'p-name': p.name, 'p-brand': p.brand, 'p-model': p.model, 'p-code': p.code, 'p-supplier': p.supplierId, 'p-stock': p.stock, 'p-cost': p.cost, 'p-price': p.price, 'p-image-data': p.image };
+            Object.keys(f).forEach(k => { const el = document.getElementById(k); if(el) el.value = f[k] || ''; });
+            const pc = document.getElementById('image-preview-container'); if(pc) pc.innerHTML = p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : '';
+            window.openModal('modal-product');
+        };
+
+        window.editSupplier = (s) => { const f = { 's-id': s.id, 's-name': s.name, 's-whatsapp': s.whatsapp, 's-phone': s.phone, 's-email': s.email, 's-address': s.address, 's-city': s.city, 's-country': s.country }; Object.keys(f).forEach(k => { const el = document.getElementById(k); if(el) el.value = f[k] || ''; }); window.openModal('modal-supplier'); };
+        window.deleteProduct = async (id) => { if(confirm("¿Eliminar herramienta?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id)); };
+        window.deleteSupplier = async (id) => { if(confirm("¿Eliminar proveedor?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'suppliers', id)); };
+        window.deleteExpense = async (id) => { if(confirm("¿Eliminar registro?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', id)); };
+        window.signOutUser = () => { if(confirm("¿Cerrar sesión?")) signOut(auth); };
+        window.showToast = (m) => { const t = document.getElementById('toast'); if(t){ t.innerText = m; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 3000); } };
+        window.renderCart = () => { const c = document.getElementById('cart-items'); if(!c) return; if(cart.length === 0) c.innerHTML = '<div class="opacity-40 text-center py-8 italic text-xs uppercase tracking-widest text-adaptive">Carrito vacío</div>'; else c.innerHTML = cart.map(i => `<div class="flex justify-between items-center bg-gray-100 dark:bg-black/5 p-3 rounded-lg border border-adaptive"><div><p class="text-xs font-bold uppercase text-adaptive">${i.name}</p><p class="text-[10px] opacity-60 text-adaptive">${i.brand || 'S/M'} | ${fmt(i.price)} x ${i.qty}</p></div><div class="flex items-center gap-3"><span class="font-bold accent-color text-sm">${fmt(i.price * i.qty)}</span><button onclick="window.removeFromCart('${i.id}')" class="text-red-400"><i data-lucide="x-circle" class="w-4 h-4"></i></button></div></div>`).join(''); document.getElementById('cart-total').innerText = fmt(cart.reduce((s, i) => s + (i.price * i.qty), 0)); document.getElementById('cart-count').innerText = cart.length; lucide.createIcons(); };
+        window.exportStock = (onlyFiltered) => { const sVal = document.getElementById('stock-search').value.toLowerCase(); let data = onlyFiltered ? products.filter(p => (p.name && p.name.toLowerCase().includes(sVal)) || (p.brand && p.brand.toLowerCase().includes(sVal))) : products; if(!data.length) return window.showToast("Sin datos"); let csv = "\uFEFFNombre,Marca,Modelo,Codigo,Stock,Costo,Precio\n"; data.forEach(p => { csv += `"${p.name || ''}","${p.brand || ''}","${p.model || ''}","${p.code || ''}",${p.stock || 0},${p.cost || 0},${p.price || 0}\n`; }); const b = new Blob([csv], {type:'text/csv;charset=utf-8;'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `Stock.csv`; a.click(); };
+        window.viewLargeImage = (src) => { const v = document.getElementById('image-viewer'); const i = document.getElementById('enlarged-image'); if(v && i && src) { i.src = src; v.classList.remove('hidden'); v.classList.add('flex'); lucide.createIcons(); } };
+        window.closeImageViewer = () => { const v = document.getElementById('image-viewer'); if(v) { v.classList.add('hidden'); v.classList.remove('flex'); } };
+        window.removeFromCart = (id) => { cart = cart.filter(i => i.id !== id); window.renderCart(); };
+        window.updateSupplierSelect = () => { const s = document.getElementById('p-supplier'); if (s) s.innerHTML = '<option value="">Seleccionar</option>' + suppliers.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); };
+        window.updateDatalists = () => { const nEl = document.getElementById('list-product-names'); const bEl = document.getElementById('list-brands'); if (nEl) nEl.innerHTML = [...new Set(products.map(p => p.name))].map(n => `<option value="${n}">`).join(''); if (bEl) bEl.innerHTML = [...new Set(products.map(p => p.brand))].map(b => `<option value="${b}">`).join(''); };
+        window.filterHistory = () => { 
+            const hl = document.getElementById('history-list'); if(!hl) return; 
+            const fFrom = document.getElementById('hist-from'); 
+            const fTo = document.getElementById('hist-to'); 
+            const fSearch = document.getElementById('hist-search'); 
+            const fType = document.getElementById('hist-type'); 
+            
+            const from = fFrom?.value ? new Date(fFrom.value + "T00:00:00").getTime() : 0; 
+            const to = fTo?.value ? new Date(fTo.value + "T23:59:59").getTime() : Infinity; 
+            const term = fSearch?.value.toLowerCase() || ""; 
+            const type = fType?.value; 
+
+            let f = historyRaw.filter(h => { 
+                const ts = h.date?.toDate ? h.date.toDate().getTime() : 0; 
+                const matchesSearch = h.detail.toLowerCase().includes(term) || 
+                                     (h.customerName && h.customerName.toLowerCase().includes(term)) ||
+                                     (h.items && h.items.some(it => it.supplierName && it.supplierName.toLowerCase().includes(term)));
+                const matchesType = !type || h.saleMode === type; 
+                return ts >= from && ts <= to && matchesSearch && matchesType; 
+            }).sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)); 
+            
+            // Limitado estrictamente a los últimos 10 movimientos si no hay filtros activos
+            if(!fFrom?.value && !fTo?.value && !term && !type) {
+                f = f.slice(0, 10);
+            } else {
+                f = f.slice(0, 50); // Límite de seguridad razonable para búsquedas
+            }
+            
+            hl.innerHTML = f.map(h => `
+                <tr class="border-b border-adaptive text-xs hover:bg-gray-50 dark:hover:bg-black/5 transition-colors">
+                    <td class="p-4 opacity-60">${h.date?.toDate ? h.date.toDate().toLocaleDateString() : 'Reciente'}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-adaptive shadow-sm">${h.saleMode || 'N/A'}</span>
+                    </td>
+                    <td class="p-4 font-bold text-adaptive">${h.customerName || 'Mostrador'}</td>
+                    <td class="p-4 opacity-60 italic">${h.detail}</td>
+                    <td class="p-4 font-bold accent-color text-sm">${fmt(h.amount)}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="window.undoSale('${h.id}')" class="text-red-400 hover:text-red-600 hover:scale-110 transition-all" title="Anular venta y restaurar stock">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>`).join(''); 
             lucide.createIcons();
         };
-
-        window.openModal = (id) => { const el = document.getElementById(id); el.classList.remove('hidden'); el.classList.add('flex'); lucide.createIcons(); };
-        window.closeModal = (id) => { const el = document.getElementById(id); el.classList.add('hidden'); el.classList.remove('flex'); };
-        window.confirmAction = (msg, callback) => { document.getElementById('confirm-msg').innerText = msg; confirmCallback = callback; openModal('modal-confirm'); };
-        window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 3000); };
-        window.signOutUser = () => signOut(auth);
-        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
-        function updateSupplierSelect() { 
-            const s = document.getElementById('p-supplier'); 
-            if(s) s.innerHTML = '<option value="">Sin proveedor</option>' + suppliers.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); 
-        }
-        window.prepareNew = (id) => { document.getElementById(id).querySelector('form').reset(); document.getElementById(id).querySelector('input[type="hidden"]').value = ''; window.openModal(id); };
+        window.editExpense = (e) => { document.getElementById('e-id').value = e.id; document.getElementById('e-concept').value = e.concept; document.getElementById('e-category').value = e.category; document.getElementById('e-amount').value = e.amount; window.openModal('modal-expense'); };
+        window.viewClientHistory = (id, name) => { const cs = historyRaw.filter(h => h.customerId === id); document.getElementById('client-history-name').innerText = `Compras de ${name}`; document.getElementById('client-history-content').innerHTML = cs.length ? cs.map(h => `<div class="mb-4 p-4 bg-gray-100 dark:bg-black/5 rounded border border-adaptive"><div class="flex justify-between text-xs mb-1"><span class="opacity-60">${h.date?.toDate ? h.date.toDate().toLocaleDateString() : 'Reciente'}</span><span class="font-bold uppercase text-amber-500">${h.saleMode}</span></div><p class="text-sm text-adaptive">${h.detail}</p><p class="text-right font-bold mt-2 text-amber-500">${fmt(h.amount)}</p></div>`).join('') : '<p class="text-center italic opacity-40 text-adaptive">Sin compras registradas</p>'; window.openModal('modal-client-history'); };
 
         window.addEventListener('load', startApp);
     </script>
 </body>
 </html>
+
