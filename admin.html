@@ -304,10 +304,22 @@
 
         window.downloadCSV = (col) => {
             let data = [], headers = "", name = col + "_HL.csv";
-            if(col === 'products') { headers = "Nombre,Marca,Stock,Precio\n"; data = products.map(p => `"${p.name}","${p.brand}",${p.stock},${p.price}`); }
-            else if(col === 'history') { headers = "Fecha,Cliente,Monto,Modo\n"; data = historyRaw.map(h => `"${h.date?.toDate().toLocaleString() || ''}","${h.customerName}",${h.amount},"${h.saleMode}"`); }
-            else if(col === 'customers') { headers = "Nombre,Telefono,Email\n"; data = customers.map(c => `"${c.name}",${c.phone},"${c.email}"`); }
-            else if(col === 'suppliers') { headers = "Nombre,WhatsApp\n"; data = suppliers.map(s => `"${s.name}","${s.whatsapp}"`); }
+            if(col === 'products') { 
+                headers = "ID,Nombre,Marca,Modelo,Codigo,Stock,Costo,Precio,IDProveedor\n"; 
+                data = products.map(p => `"${p.id}","${p.name}","${p.brand || ''}","${p.model || ''}","${p.code || ''}",${p.stock},${p.cost || 0},${p.price},"${p.supplierId || ''}"`); 
+            }
+            else if(col === 'history') { 
+                headers = "ID,Fecha,Cliente,Modo,Detalle,Monto\n"; 
+                data = historyRaw.map(h => `"${h.id}","${h.date?.toDate().toLocaleString() || ''}","${h.customerName}","${h.saleMode}","${h.detail}",${h.amount}`); 
+            }
+            else if(col === 'customers') { 
+                headers = "ID,Nombre,Apellido,Telefono,Email\n"; 
+                data = customers.map(c => `"${c.id}","${c.name}","${c.surname || ''}","${c.phone || ''}","${c.email || ''}"`); 
+            }
+            else if(col === 'suppliers') { 
+                headers = "ID,Nombre,WhatsApp\n"; 
+                data = suppliers.map(s => `"${s.id}","${s.name}","${s.whatsapp || ''}"`); 
+            }
             
             const blob = new Blob(["\uFEFF" + headers + data.join("\n")], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.setAttribute("download", name); link.click();
